@@ -108,6 +108,18 @@
             ge.checkpoint(); //empty the undo stack
         });
 
+        function getProjectMemberShip(identifier, server) {
+            var resource = server + "/projects/" + identifier + "/memberships.json?callback=?";
+            $.getJSON(resource, function (json) {
+                // console.log("JSON Data: " + json.memberships[0].id);
+                var ret = {};
+                ret.resources = [];
+                for (var i = 0; i < json.memberships.length; i++) {
+                    ret.resources.push(json.memberships[i].user);
+                }       
+                console.log("JSON Data: " + JSON.stringify(ret));         
+            });
+        }
 
         function getDemoProject() {
             //console.debug("getDemoProject")
