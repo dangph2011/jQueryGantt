@@ -109,26 +109,33 @@
 
             var server = "http://159.65.9.28/redmine";
             var projectIdentifier = "dangph1";
-            var projectResource = server + "/projects/" + projectIdentifier + "/memberships.json?callback=?";
-            var issueResource = server + "/issues.json?status_id=*&project_id=" + projectIdentifier +
+            var membershipPath = server + "/projects/" + projectIdentifier + "/memberships.json?callback=?";
+            var issuePath = server + "/issues.json?status_id=*&project_id=" + projectIdentifier +
                 "&callback=?";
-            $.when($.getJSON(projectResource), $.getJSON(issueResource))
-                .then(function (resp1, resp2) {
+            var rolePath = server + "/roles.json?callback=?";
+            $.when($.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath))
+                .then(function (memberships, issues, roles) {
 
                     var project = {};
 
                     //reflect membership/user/resources
                     project.resources = [];
-                    for (var i = 0; i < resp1[0].memberships.length; i++) {
-                        project.resources.push(resp1[0].memberships[i].user);
+
+                    var userToRole = {};
+                    for (var i = 0; i < memberships[0].memberships.length; i++) {
+                        project.resources.push(memberships[0].memberships[i].user);
+                        userToRole[memberships[0].memberships[i].user.id] = memberships[0].memberships[i].roles;
                     }
+
+                    //reflect role
+                    project.roles = roles[0].roles;
 
                     //reflect task/issue
                     project.tasks = [];
-                    for (var i = 0; i < resp2[0].issues.length; i++) {
+                    for (var i = 0; i < issues[0].issues.length; i++) {
                         var task = {};
                       
-                        var issue = resp2[0].issues[i];
+                        var issue = issues[0].issues[i];
                         task.id = issue.id;
                         task.code = issue.id;
                         task.name = issue.subject;
@@ -143,27 +150,19 @@
 
                         //reflect assignees
                         task.assigs = [];
-                        var assig = {};
-                        assig.id = "tmp_" + new Date().getTime()+"_"+i;
-                        assig.resourceId = issue.assigned_to.id;
-                        // assig.roleId = 1;
-                        // assig.effort = 36000000;
-                        task.assigs.push(assig);
+                        for (var j = 0; j < userToRole[issue.assigned_to.id].length; j++) {
+                            var assig = {};
+                            assig.id = "tmp_" + new Date().getTime()+"_"+i + j;
+                            assig.resourceId = issue.assigned_to.id;
+                            assig.roleId = userToRole[issue.assigned_to.id][j].id;
+                            task.assigs.push(assig);
+                        }
 
                         project.tasks.push(task);
                     }
                     project.tasks.sort(function (a, b) {
-                        console.log("ID Task: ",  a.id);
                         return a.id - b.id;
                     });
-
-                    //reflect roles
-                    //TODO: examine roles;
-                    project.roles = [];
-                    var role = {};
-                    role.id = 1;
-                    role.name = "Project manager";
-                    project.roles.push(role);
 
                     project.canWrite = true;
 
@@ -191,6 +190,7 @@
         function getProject(projectIdentifier, server) {
             var projectResource = server + "/projects/" + projectIdentifier + "/memberships.json?callback=?";
             var issueResource = server + "/issues.json?status_id=*&project_id=" + projectIdentifier + "&callback=?";
+            var projectRole = server + "/roles.json?callback=?";
             $.when($.getJSON(projectResource), $.getJSON(issueResource))
                 .then(function (resp1, resp2) {
 
@@ -543,11 +543,23 @@
             return ret;
         }
 
+        function saveIssue() {
+
+        }
+
+        function saveResource(resources, projectIdentifier) {
+            for (var i = 0; i < resources.length; i++) {
+
+            }
+        }
 
         function saveGanttOnServer() {
 
             //this is a simulation: save data to the local storage or to the textarea
             saveInLocalStorage();
+            var prj = ge.saveProject();
+
+            
 
             /*
             var prj = ge.saveProject();
