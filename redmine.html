@@ -99,13 +99,86 @@
             //in order to force compute the best-fitting zoom level
             delete ge.gantt.zoom;
 
-            var project = loadFromLocalStorage();
+            // var project = loadFromLocalStorage();
 
-            if (!project.canWrite)
-                $(".ganttButtonBar button.requireWrite").attr("disabled", "true");
+            // if (!project.canWrite)
+            //     $(".ganttButtonBar button.requireWrite").attr("disabled", "true");
 
-            ge.loadProject(project);
-            ge.checkpoint(); //empty the undo stack
+            // ge.loadProject(project);
+            // ge.checkpoint(); //empty the undo stack
+
+            var server = "http://159.65.9.28/redmine";
+            var projectIdentifier = "dangph1";
+            var projectResource = server + "/projects/" + projectIdentifier + "/memberships.json?callback=?";
+            var issueResource = server + "/issues.json?status_id=*&project_id=" + projectIdentifier +
+                "&callback=?";
+            $.when($.getJSON(projectResource), $.getJSON(issueResource))
+                .then(function (resp1, resp2) {
+
+                    var project = {};
+
+                    //reflect membership/user/resources
+                    project.resources = [];
+                    for (var i = 0; i < resp1[0].memberships.length; i++) {
+                        project.resources.push(resp1[0].memberships[i].user);
+                    }
+
+                    //reflect task/issue
+                    project.tasks = [];
+                    for (var i = 0; i < resp2[0].issues.length; i++) {
+                        var task = {};
+                      
+                        var issue = resp2[0].issues[i];
+                        task.id = issue.id;
+                        task.code = issue.id;
+                        task.name = issue.subject;
+                        task.progress = issue.done_ratio;
+                        task.description = issue.description;
+                        task.level = 0; //TODO: examine task.level
+                        task.status = issue.status.name;
+                        task.canWrite = true;
+                        task.start = (new Date(issue.start_date)).getTime();
+                        task.duration = 3;
+                        task.end = (new Date(issue.due_date).getTime());
+
+                        //reflect assignees
+                        task.assigs = [];
+                        var assig = {};
+                        assig.id = "tmp_" + new Date().getTime()+"_"+i;
+                        assig.resourceId = issue.assigned_to.id;
+                        // assig.roleId = 1;
+                        // assig.effort = 36000000;
+                        task.assigs.push(assig);
+
+                        project.tasks.push(task);
+                    }
+                    project.tasks.sort(function (a, b) {
+                        console.log("ID Task: ",  a.id);
+                        return a.id - b.id;
+                    });
+
+                    //reflect roles
+                    //TODO: examine roles;
+                    project.roles = [];
+                    var role = {};
+                    role.id = 1;
+                    role.name = "Project manager";
+                    project.roles.push(role);
+
+                    project.canWrite = true;
+
+                    console.log("Task: ", project);
+                    // var project = getDemoProject();
+
+                    if (!project.canWrite)
+                        $(".ganttButtonBar button.requireWrite").attr("disabled", "true");
+                    ge.loadProject(project);
+                    ge.checkpoint(); //empty the undo stack
+
+                }).fail(function (problem) {
+                    // handle errors (some request has failed)
+                    console.log("Problem " + problem);
+                });
         });
 
         // function getProjectMemberShip(identifier, server,callback) {
@@ -146,8 +219,7 @@
                     var ret = {};
                     ret.tasks = tasks;
                     ret.resources = resources;
-
-                    console.log("Task: ", ret);
+                    console.log("Task: ", (ret));
 
                 }).fail(function (problem) {
                     // handle errors (some request has failed)
