@@ -152,12 +152,14 @@
 
                         //reflect assignees
                         task.assigs = [];
-                        for (var j = 0; j < userToRole[issue.assigned_to.id].length; j++) {
-                            var assig = {};
-                            assig.id = "tmp_" + new Date().getTime() + "_" + i + j;
-                            assig.resourceId = issue.assigned_to.id;
-                            assig.roleId = userToRole[issue.assigned_to.id][j].id;
-                            task.assigs.push(assig);
+                        if (issue.hasOwnProperty("assigned_to")) {
+                            for (var j = 0; j < userToRole[issue.assigned_to.id].length; j++) {
+                                var assig = {};
+                                assig.id = "tmp_" + new Date().getTime() + "_" + i + j;
+                                assig.resourceId = issue.assigned_to.id;
+                                assig.roleId = userToRole[issue.assigned_to.id][j].id;
+                                task.assigs.push(assig);
+                            }
                         }
 
                         project.tasks.push(task);
@@ -550,47 +552,47 @@
 
         function createIssue(issue) {
             $.ajax({
-                    type: 'POST',
-                    url: '/issues.json',
-                    data: JSON.stringify(issue),
-                    dataType: 'json',
-                    success: function (data) {
-                        console.log('SUCCESS: ', data);
-                    },
-                    error: function (data) {
-                        console.log('ERROR: ', data);
-                    },
-                });
+                type: 'POST',
+                url: '/issues.json',
+                data: JSON.stringify(issue),
+                dataType: 'json',
+                success: function (data) {
+                    console.log('SUCCESS: ', data);
+                },
+                error: function (data) {
+                    console.log('ERROR: ', data);
+                },
+            });
         }
 
         function updateIssue(server, issue) {
             $.ajax({
-                    type: 'PUT',
-                    url: '/issues/' + issue.id + '.json',
-                    data: JSON.stringify(issue),
-                    dataType: 'json',
-                    success: function (data) {
-                        console.log('SUCCESS: ', data);
-                    },
-                    error: function (data) {
-                        console.log('ERROR: ', data);
-                    },
-                });
+                type: 'PUT',
+                url: '/issues/' + issue.id + '.json',
+                data: JSON.stringify(issue),
+                dataType: 'json',
+                success: function (data) {
+                    console.log('SUCCESS: ', data);
+                },
+                error: function (data) {
+                    console.log('ERROR: ', data);
+                },
+            });
         }
 
         function createIssue(server, issue) {
             $.ajax({
-                    type: 'POST',
-                    url: server+'/issues.json',
-                    data: JSON.stringify(issue),
-                    dataType: 'json',
-                    success: function (data) {
-                        console.log('SUCCESS: ', data);
-                    },
-                    error: function (data) {
-                        console.log('ERROR: ', data);
-                    },
-                });
+                type: 'POST',
+                url: server + '/issues.json',
+                data: JSON.stringify(issue),
+                dataType: 'json',
+                success: function (data) {
+                    console.log('SUCCESS: ', data);
+                },
+                error: function (data) {
+                    console.log('ERROR: ', data);
+                },
+            });
         }
 
         function saveMembership() {
@@ -633,7 +635,7 @@
                 //     task.assigs.push(assig);
                 // }
 
-                
+
             }
 
             /*
