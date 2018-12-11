@@ -84,6 +84,8 @@
 
     <script type="text/javascript">
         var ge;
+
+
         $(function () {
             var canWrite = true; //this is the default for test purposes
 
@@ -276,6 +278,201 @@
                 console.log("JSON Data: " + JSON.stringify(value));
                 return value;
             });
+        }
+
+
+
+
+
+        function loadGanttFromServer(taskId, callback) {
+
+            //this is a simulation: load data from the local storage if you have already played with the demo or a textarea with starting demo data
+            var ret = loadFromLocalStorage();
+
+            //this is the real implementation
+            /*
+            //var taskId = $("#taskSelector").val();
+            var prof = new Profiler("loadServerSide");
+            prof.reset();
+
+            $.getJSON("ganttAjaxController.jsp", {CM:"LOADPROJECT",taskId:taskId}, function(response) {
+              //console.debug(response);
+              if (response.ok) {
+                prof.stop();
+
+                ge.loadProject(response.project);
+                ge.checkpoint(); //empty the undo stack
+
+                if (typeof(callback)=="function") {
+                  callback(response);
+                }
+              } else {
+                jsonErrorHandling(response);
+              }
+            });
+            */
+
+            return ret;
+        }
+
+        function createIssue(server, key, issue) {
+            var proxy = 'https://cors-anywhere.herokuapp.com/';
+            jQuery.ajax({
+                type: 'POST',
+                url: proxy + server + '/issues.json' + "?key=" + key,
+                data: issue,
+                dataType: 'json',
+                // crossDomain: true,
+                // headers: {
+                //     "accept": "application/json",
+                //     "Access-Control-Allow-Origin": "*"
+                // },
+                success: function (data) {
+                    console.log('SUCCESS: ', data);
+                },
+                error: function (data) {
+                    console.log('ERROR: ', data);
+                },
+            });
+        }
+
+        function updateIssue(server, key, issue) {
+            var proxy = 'https://cors-anywhere.herokuapp.com/';
+            jQuery.ajax({
+                type: 'PUT',
+                url: proxy + server + '/issues/' + issue.issue.id + '.json' + "?key=" + key,
+                data: issue,
+                dataType: 'json',
+                // crossDomain: true,
+                // contentType: "application/json; charset=utf-8",
+                // headers: {
+                //     "accept": "application/json",
+                //     "Access-Control-Allow-Origin": "*"
+                // },
+                success: function (data) {
+                    console.log('SUCCESS: ', data);
+                },
+                error: function (data) {
+                    console.log('ERROR: ', data);
+                },
+            });
+        }
+
+        function saveMembership() {
+
+        }
+
+        var server = "http://159.65.9.28/redmine";
+        var projectIdentifier = "dangph1";
+        var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
+
+        function saveGanttOnServer() {
+
+            //this is a simulation: save data to the local storage or to the textarea
+            saveInLocalStorage();
+            var prj = ge.saveProject();
+
+            for (var i = 0; i < prj.tasks.length; i++) {
+                var task = prj.tasks[i];
+                var issue = {};
+                issue.issue = {};
+                if (task.hasOwnProperty("id")) {
+                    issue.issue.id = task.id;
+                }
+                if (task.hasOwnProperty("name")) {
+                    issue.issue.subject = task.name;
+                }
+                if (task.hasOwnProperty("progress")) {
+                    issue.issue.done_ratio = task.progress;
+                }
+                if (task.hasOwnProperty("description")) {
+                    issue.issue.description = task.description;
+                }
+                if (task.hasOwnProperty("start")) {
+                    issue.issue.start_date = (new Date(task.start)).format("yyyy-MM-dd");
+                }   
+
+                if (task.hasOwnProperty("end")) {
+                    issue.issue.due_date = (new Date(task.end)).format("yyyy-MM-dd");
+                }
+
+                // var issueCreated = issue.issue.id.includes("tmp");
+                // var issueCreated = isNaN(issue.issue.id);
+
+                if (isNaN(issue.issue.id)) {
+                    //hard code project = 4
+                    issue.project_id = 4;
+                    createIssue(server, key, issue);
+                } else {
+                    updateIssue(server, key, issue);
+                }
+
+                console.log("Issue: ", JSON.stringify(issue));
+
+                // task.level = 0; //TODO: examine task.level
+                // task.status = issue.status.name;
+                // task.canWrite = true;
+                // task.duration = 3;
+
+
+
+                //reflect assignees
+                // task.assigs = [];
+                // for (var j = 0; j < userToRole[issue.assigned_to.id].length; j++) {
+                //     var assig = {};
+                //     assig.id = "tmp_" + new Date().getTime()+"_"+i + j;
+                //     assig.resourceId = issue.assigned_to.id;
+                //     assig.roleId = userToRole[issue.assigned_to.id][j].id;
+                //     task.assigs.push(assig);
+                // }
+
+
+            }
+
+            /*
+            var prj = ge.saveProject();
+
+            delete prj.resources;
+            delete prj.roles;
+
+            var prof = new Profiler("saveServerSide");
+            prof.reset();
+
+            if (ge.deletedTaskIds.length>0) {
+              if (!confirm("TASK_THAT_WILL_BE_REMOVED\n"+ge.deletedTaskIds.length)) {
+                return;
+              }
+            }
+
+            $.ajax("ganttAjaxController.jsp", {
+              dataType:"json",
+              data: {CM:"SVPROJECT",prj:JSON.stringify(prj)},
+              type:"POST",
+
+              success: function(response) {
+                if (response.ok) {
+                  prof.stop();
+                  if (response.project) {
+                    ge.loadProject(response.project); //must reload as "tmp_" ids are now the good ones
+                  } else {
+                    ge.reset();
+                  }
+                } else {
+                  var errMsg="Errors saving project\n";
+                  if (response.message) {
+                    errMsg=errMsg+response.message+"\n";
+                  }
+
+                  if (response.errorMessages.length) {
+                    errMsg += response.errorMessages.join("\n");
+                  }
+
+                  alert(errMsg);
+                }
+              }
+
+            });
+            */
         }
 
         function getDemoProject() {
@@ -515,173 +712,6 @@
                 ret.tasks[i].start = ret.tasks[i].start + offset;
             }
             return ret;
-        }
-
-
-
-        function loadGanttFromServer(taskId, callback) {
-
-            //this is a simulation: load data from the local storage if you have already played with the demo or a textarea with starting demo data
-            var ret = loadFromLocalStorage();
-
-            //this is the real implementation
-            /*
-            //var taskId = $("#taskSelector").val();
-            var prof = new Profiler("loadServerSide");
-            prof.reset();
-
-            $.getJSON("ganttAjaxController.jsp", {CM:"LOADPROJECT",taskId:taskId}, function(response) {
-              //console.debug(response);
-              if (response.ok) {
-                prof.stop();
-
-                ge.loadProject(response.project);
-                ge.checkpoint(); //empty the undo stack
-
-                if (typeof(callback)=="function") {
-                  callback(response);
-                }
-              } else {
-                jsonErrorHandling(response);
-              }
-            });
-            */
-
-            return ret;
-        }
-
-        function createIssue(issue) {
-            $.ajax({
-                type: 'POST',
-                url: '/issues.json',
-                data: JSON.stringify(issue),
-                dataType: 'json',
-                success: function (data) {
-                    console.log('SUCCESS: ', data);
-                },
-                error: function (data) {
-                    console.log('ERROR: ', data);
-                },
-            });
-        }
-
-        function updateIssue(server, issue) {
-            $.ajax({
-                type: 'PUT',
-                url: '/issues/' + issue.id + '.json',
-                data: JSON.stringify(issue),
-                dataType: 'json',
-                success: function (data) {
-                    console.log('SUCCESS: ', data);
-                },
-                error: function (data) {
-                    console.log('ERROR: ', data);
-                },
-            });
-        }
-
-        function createIssue(server, issue) {
-            $.ajax({
-                type: 'POST',
-                url: server + '/issues.json',
-                data: JSON.stringify(issue),
-                dataType: 'json',
-                success: function (data) {
-                    console.log('SUCCESS: ', data);
-                },
-                error: function (data) {
-                    console.log('ERROR: ', data);
-                },
-            });
-        }
-
-        function saveMembership() {
-
-        }
-
-        function saveGanttOnServer() {
-
-            //this is a simulation: save data to the local storage or to the textarea
-            saveInLocalStorage();
-            var prj = ge.saveProject();
-
-            for (var i = 0; i < prj.tasks.length; i++) {
-                var task = prj.tasks[i];
-                var issue = {};
-                issue.issue.id = task.id;
-                issue.issue.subject = task.name;
-                issue.issue.subject = task.name;
-                issue.issue.done_ratio = task.progress;
-                issue.issue.description = task.description;
-                issue.issue.start_date = new Date(task.start);
-                issue.issue.due_date = new Date(task.end);
-
-                console.log("Issue: ", issue);
-
-                // task.level = 0; //TODO: examine task.level
-                // task.status = issue.status.name;
-                // task.canWrite = true;
-                // task.duration = 3;
-
-
-
-                //reflect assignees
-                // task.assigs = [];
-                // for (var j = 0; j < userToRole[issue.assigned_to.id].length; j++) {
-                //     var assig = {};
-                //     assig.id = "tmp_" + new Date().getTime()+"_"+i + j;
-                //     assig.resourceId = issue.assigned_to.id;
-                //     assig.roleId = userToRole[issue.assigned_to.id][j].id;
-                //     task.assigs.push(assig);
-                // }
-
-
-            }
-
-            /*
-            var prj = ge.saveProject();
-
-            delete prj.resources;
-            delete prj.roles;
-
-            var prof = new Profiler("saveServerSide");
-            prof.reset();
-
-            if (ge.deletedTaskIds.length>0) {
-              if (!confirm("TASK_THAT_WILL_BE_REMOVED\n"+ge.deletedTaskIds.length)) {
-                return;
-              }
-            }
-
-            $.ajax("ganttAjaxController.jsp", {
-              dataType:"json",
-              data: {CM:"SVPROJECT",prj:JSON.stringify(prj)},
-              type:"POST",
-
-              success: function(response) {
-                if (response.ok) {
-                  prof.stop();
-                  if (response.project) {
-                    ge.loadProject(response.project); //must reload as "tmp_" ids are now the good ones
-                  } else {
-                    ge.reset();
-                  }
-                } else {
-                  var errMsg="Errors saving project\n";
-                  if (response.message) {
-                    errMsg=errMsg+response.message+"\n";
-                  }
-
-                  if (response.errorMessages.length) {
-                    errMsg += response.errorMessages.join("\n");
-                  }
-
-                  alert(errMsg);
-                }
-              }
-
-            });
-            */
         }
 
         function newProject() {
