@@ -153,6 +153,7 @@
                         task.duration = recomputeDuration(task.start, task.end);
 
                         //reflect assignees
+                        //one task - one user - many role
                         task.assigs = [];
                         if (issue.hasOwnProperty("assigned_to")) {
                             for (var j = 0; j < userToRole[issue.assigned_to.id].length; j++) {
@@ -362,6 +363,27 @@
 
         }
 
+        function deleteIssues(server, key, issueIds) {
+            for (var i = 0; i < issueIds.length; i++) {
+                var issueId = issueIds[i];
+                deleteIssue(server, key, issueId);
+            }
+        }
+
+        function deleteIssue(server, key, issueId) {
+            var proxy = 'https://cors-anywhere.herokuapp.com/';
+            $.ajax({
+                type: "DELETE",
+                url: proxy + server + '/issues/' + issueId + ".json" + "?key=" + key,
+                success: function (data) {
+                    console.log('SUCCESS: ', data);
+                },
+                error: function (data) {
+                    console.log('ERROR: ', data);
+                },
+            });
+        }
+
         var server = "http://159.65.9.28/redmine";
         var projectIdentifier = "dangph1";
         var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
@@ -370,6 +392,17 @@
 
             //this is a simulation: save data to the local storage or to the textarea
             saveInLocalStorage();
+            //deleted task
+            if (ge.deletedTaskIds.length > 0) {
+                if (confirm("TASK_THAT_WILL_BE_REMOVED\n" + ge.deletedTaskIds.length)) {
+                    //deleted Task
+                    deleteIssues(server, key, ge.deletedTaskIds);
+                } else {
+                    return;
+                }
+            }
+
+            //up to date Task
             var prj = ge.saveProject();
 
             for (var i = 0; i < prj.tasks.length; i++) {
@@ -390,7 +423,7 @@
                 }
                 if (task.hasOwnProperty("start")) {
                     issue.issue.start_date = (new Date(task.start)).format("yyyy-MM-dd");
-                }   
+                }
 
                 if (task.hasOwnProperty("end")) {
                     issue.issue.due_date = (new Date(task.end)).format("yyyy-MM-dd");
@@ -406,26 +439,9 @@
                 } else {
                     updateIssue(server, key, issue);
                 }
-
-                // console.log("Issue: ", JSON.stringify(issue));
-
                 // task.level = 0; //TODO: examine task.level
-                // task.status = issue.status.name;
-                // task.canWrite = true;
-                // task.duration = 3;
-
-
-
-                //reflect assignees
-                // task.assigs = [];
-                // for (var j = 0; j < userToRole[issue.assigned_to.id].length; j++) {
-                //     var assig = {};
-                //     assig.id = "tmp_" + new Date().getTime()+"_"+i + j;
-                //     assig.resourceId = issue.assigned_to.id;
-                //     assig.roleId = userToRole[issue.assigned_to.id][j].id;
-                //     task.assigs.push(assig);
-                // }
             }
+
 
             /*
             var prj = ge.saveProject();
@@ -812,7 +828,8 @@
                     var row = $(this);
                     var name = row.find("input[name]").val();
                     if (name && name != "")
-                        newRes.push(new Resource("tmp_" + new Date().getTime() + "_" + cnt, name));
+                        newRes.push(new Resource("tmp_" + new Date().getTime() + "_" + cnt,
+                            name));
                 });
 
                 ge.resources = newRes;
@@ -837,7 +854,8 @@
                 if (response.ok == true && response.historyPoints && response.historyPoints.length > 0) {
 
                     //si crea il bottone sulla bottoniera
-                    var histBtn = $("<button>").addClass("button textual icon lreq30 lreqLabel").attr("title",
+                    var histBtn = $("<button>").addClass("button textual icon lreq30 lreqLabel").attr(
+                        "title",
                         "SHOW_HISTORY").append("<span class=\"teamworkIcon\">&#x60;</span>");
 
                     //al click
@@ -866,11 +884,12 @@
                                         //ge.historyPoints=response.historyPoints;
                                         if (dh && dh.length > 0) {
                                             //si crea il div per lo slider
-                                            var sliderDiv = $("<div>").prop("id", "slider").addClass(
-                                                "lreq30 lreqHide").css({
-                                                "display": "inline-block",
-                                                "width": "500px"
-                                            });
+                                            var sliderDiv = $("<div>").prop("id", "slider")
+                                                .addClass(
+                                                    "lreq30 lreqHide").css({
+                                                    "display": "inline-block",
+                                                    "width": "500px"
+                                                });
                                             ganttButtons.append(sliderDiv);
 
                                             var minVal = 0;
@@ -897,16 +916,21 @@
                                                     $.getJSON(contextPath +
                                                         "/applications/teamwork/task/taskAjaxController.jsp", {
                                                             CM: "GETGANTTHISTORYAT",
-                                                            OBJID: ge.tasks[0].id,
+                                                            OBJID: ge.tasks[
+                                                                0].id,
                                                             millis: dh[val]
                                                         },
                                                         function (response) {
-                                                            jsonResponseHandling(
-                                                                response);
-                                                            hideSavingMessage();
+                                                            jsonResponseHandling
+                                                                (
+                                                                    response
+                                                                );
+                                                            hideSavingMessage
+                                                                ();
                                                             if (response.ok) {
                                                                 ge.baselines =
-                                                                    response.baselines;
+                                                                    response
+                                                                    .baselines;
                                                                 ge.showBaselines =
                                                                     true;
                                                                 ge.baselineMillis =
@@ -919,10 +943,11 @@
                                                 onSlide: function (obj) {
                                                     clearTimeout(obj.renderHistory);
                                                     var self = this;
-                                                    obj.renderHistory = setTimeout(
-                                                        function () {
-                                                            self.onStop(obj);
-                                                        }, 200)
+                                                    obj.renderHistory =
+                                                        setTimeout(
+                                                            function () {
+                                                                self.onStop(obj);
+                                                            }, 200)
 
                                                 }
                                             });
