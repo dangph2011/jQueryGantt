@@ -445,8 +445,7 @@
                 }
 
                 if (isNaN(issue.issue.id)) {
-                    //hard code project = 4
-                    issue.project_id = 4;
+                    issue.project_id = projectIdentifier;
                     createIssue(server, key, issue);
                 } else {
                     updateIssue(server, key, issue);
