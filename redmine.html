@@ -85,6 +85,10 @@
     <script type="text/javascript">
         var ge;
 
+        var proxy = 'https://cors-anywhere.herokuapp.com/';
+        var server = "http://159.65.9.28/redmine";
+        var projectIdentifier = 1;
+        var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
 
         $(function () {
             var canWrite = true; //this is the default for test purposes
@@ -110,12 +114,12 @@
             // ge.checkpoint(); //empty the undo stack
 
             //hardcode server and project identifier
-            var server = "http://159.65.9.28/redmine";
-            var projectIdentifier = "dangph1";
             var membershipPath = server + "/projects/" + projectIdentifier + "/memberships.json?callback=?";
+
             var issuePath = server + "/issues.json?status_id=*&project_id=" + projectIdentifier +
                 "&callback=?";
             var rolePath = server + "/roles.json?callback=?";
+
             $.when($.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath))
                 .then(function (memberships, issues, roles) {
 
@@ -123,12 +127,17 @@
 
                     //reflect membership/user/resources
                     project.resources = [];
-
+                    console.log("mbs: ", memberships);
                     //map user to rolesg
                     var userToRole = {};
                     for (var i = 0; i < memberships[0].memberships.length; i++) {
-                        project.resources.push(memberships[0].memberships[i].user);
-                        userToRole[memberships[0].memberships[i].user.id] = memberships[0].memberships[i].roles;
+                        if (memberships[0].memberships[i].hasOwnProperty("user")) {
+                            project.resources.push(memberships[0].memberships[i].user);
+                            userToRole[memberships[0].memberships[i].user.id] = memberships[0].memberships[i].roles;
+                        } else if (memberships[0].memberships[i].hasOwnProperty("group")) {
+                            project.resources.push(memberships[0].memberships[i].group);
+                            userToRole[memberships[0].memberships[i].group.id] = memberships[0].memberships[i].roles;
+                        }
                     }
 
                     //reflect role
@@ -281,10 +290,6 @@
             });
         }
 
-
-
-
-
         function loadGanttFromServer(taskId, callback) {
 
             //this is a simulation: load data from the local storage if you have already played with the demo or a textarea with starting demo data
@@ -315,11 +320,6 @@
 
             return ret;
         }
-
-        var proxy = 'https://cors-anywhere.herokuapp.com/';
-        var server = "http://159.65.9.28/redmine";
-        var projectIdentifier = "dangph1";
-        var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
 
         function createIssue(server, key, issue) {
             jQuery.ajax({
