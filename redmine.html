@@ -452,27 +452,26 @@
                     updateIssue(server, key, issue);
                 }
 
-                // //reflect assigs to user - role
-                // //one task - one user - many role
-                if (task.hasOwnProperty("assigs")) {
-                    //issue - issue : 1 - 1.
-                    //get only the first user
-                    //assign only one user
-                    if (task.assigs.length > 0) {
-                        var userId= parseInt(task.assigs[0].resourceId, 10);
-                        //Update membership
-                        var membership = {};
-                        membership.membership = {};
-                        membership.membership.role_ids = [];
-                        for (var j = 0; j < task.assigs.length; j++) {
-                            //update only the first user
-                            if (task.assigs[j].resourceId == userId) {
-                                membership.membership.role_ids.push(task.assigs[j].roleId);
-                            }
-                        }
-                        updateMembership(server, key, userId, membership);
-                    }
-                }
+                // //reflect membership
+                // if (task.hasOwnProperty("assigs")) {
+                //     //issue - issue : 1 - 1.
+                //     //get only the first user
+                //     //assign only one user
+                //     if (task.assigs.length > 0) {
+                //         var userId= parseInt(task.assigs[0].resourceId, 10);
+                //         //Update membership
+                //         var membership = {};
+                //         membership.membership = {};
+                //         membership.membership.role_ids = [];
+                //         for (var j = 0; j < task.assigs.length; j++) {
+                //             //update only the first user
+                //             if (task.assigs[j].resourceId == userId) {
+                //                 membership.membership.role_ids.push(task.assigs[j].roleId);
+                //             }
+                //         }
+                //         updateMembership(server, key, userId, membership);
+                //     }
+                // }
                 // task.level = 0; //TODO: examine task.level
             }
 
