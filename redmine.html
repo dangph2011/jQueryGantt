@@ -117,7 +117,7 @@
             var membershipPath = server + "/projects/" + projectIdentifier + "/memberships.json?callback=?";
 
             var issuePath = server + "/issues.json?status_id=*&project_id=" + projectIdentifier +
-                "&callback=?";
+                "&sort=start_date&callback=?";
             var rolePath = server + "/roles.json?callback=?";
 
             $.when($.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath))
@@ -133,10 +133,12 @@
                     for (var i = 0; i < memberships[0].memberships.length; i++) {
                         if (memberships[0].memberships[i].hasOwnProperty("user")) {
                             project.resources.push(memberships[0].memberships[i].user);
-                            userToRole[memberships[0].memberships[i].user.id] = memberships[0].memberships[i].roles;
+                            userToRole[memberships[0].memberships[i].user.id] = memberships[0].memberships[
+                                i].roles;
                         } else if (memberships[0].memberships[i].hasOwnProperty("group")) {
                             project.resources.push(memberships[0].memberships[i].group);
-                            userToRole[memberships[0].memberships[i].group.id] = memberships[0].memberships[i].roles;
+                            userToRole[memberships[0].memberships[i].group.id] = memberships[0].memberships[
+                                i].roles;
                         }
                     }
 
@@ -176,9 +178,10 @@
 
                         project.tasks.push(task);
                     }
-                    project.tasks.sort(function (a, b) {
-                        return a.id - b.id;
-                    });
+
+                    // project.tasks.sort(function (a, b) {
+                    //     return a.id - b.id;
+                    // });
 
                     project.canWrite = true;
                     project.canDelete = true;
