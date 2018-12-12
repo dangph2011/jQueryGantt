@@ -428,6 +428,29 @@
                 if (task.hasOwnProperty("end")) {
                     issue.issue.due_date = (new Date(task.end)).format("yyyy-MM-dd");
                 }
+                
+                //reflect role
+                //     project.roles = roles[0].roles;
+                // //reflect assigs to user - role
+                // //one task - one user - many role
+                if (task.hasOwnProperty("assigs")) {
+                    //only get the first user
+                    //issue - issue : 1 - 1.
+                    if (task.assigs[0] != null) {
+                        issue.issue.assigned_to_id = parseInt(task.assigs[0].resourceId, 10);
+                    }
+                }
+
+                // task.assigs = [];
+                // if (issue.hasOwnProperty("assigned_to")) {
+                //     for (var j = 0; j < userToRole[issue.assigned_to.id].length; j++) {
+                //         var assig = {};
+                //         assig.id = "tmp_" + new Date().getTime() + "_" + i + j;
+                //         assig.resourceId = issue.assigned_to.id;
+                //         assig.roleId = userToRole[issue.assigned_to.id][j].id;
+                //         task.assigs.push(assig);
+                //     }
+                // }
 
                 // var issueCreated = issue.issue.id.includes("tmp");
                 // var issueCreated = isNaN(issue.issue.id);
