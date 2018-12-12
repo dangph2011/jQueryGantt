@@ -316,18 +316,18 @@
             return ret;
         }
 
+        var proxy = 'https://cors-anywhere.herokuapp.com/';
+        var server = "http://159.65.9.28/redmine";
+        var projectIdentifier = "dangph1";
+        var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
+
         function createIssue(server, key, issue) {
-            var proxy = 'https://cors-anywhere.herokuapp.com/';
             jQuery.ajax({
                 type: 'POST',
                 url: proxy + server + '/issues.json' + "?key=" + key,
-                data: issue,
-                dataType: 'json',
-                // crossDomain: true,
-                // headers: {
-                //     "accept": "application/json",
-                //     "Access-Control-Allow-Origin": "*"
-                // },
+                data: JSON.stringify(issue),
+                dataType: 'text',
+                contentType: "application/json; charset=utf-8",
                 success: function (data) {
                     console.log('SUCCESS: ', data);
                 },
@@ -338,18 +338,12 @@
         }
 
         function updateIssue(server, key, issue) {
-            var proxy = 'https://cors-anywhere.herokuapp.com/';
             jQuery.ajax({
                 type: 'PUT',
                 url: proxy + server + '/issues/' + issue.issue.id + '.json' + "?key=" + key,
-                data: issue,
-                dataType: 'json',
-                // crossDomain: true,
-                // contentType: "application/json; charset=utf-8",
-                // headers: {
-                //     "accept": "application/json",
-                //     "Access-Control-Allow-Origin": "*"
-                // },
+                data: JSON.stringify(issue),
+                dataType: 'text',
+                contentType: "application/json; charset=utf-8",
                 success: function (data) {
                     console.log('SUCCESS: ', data);
                 },
@@ -357,10 +351,6 @@
                     console.log('ERROR: ', data);
                 },
             });
-        }
-
-        function saveMembership() {
-
         }
 
         function deleteIssues(server, key, issueIds) {
@@ -371,10 +361,11 @@
         }
 
         function deleteIssue(server, key, issueId) {
-            var proxy = 'https://cors-anywhere.herokuapp.com/';
             $.ajax({
                 type: "DELETE",
                 url: proxy + server + '/issues/' + issueId + ".json" + "?key=" + key,
+                dataType: 'text',
+                contentType: "application/json; charset=utf-8",
                 success: function (data) {
                     console.log('SUCCESS: ', data);
                 },
@@ -384,9 +375,21 @@
             });
         }
 
-        var server = "http://159.65.9.28/redmine";
-        var projectIdentifier = "dangph1";
-        var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
+        function updateMembership(server, key, membershipId, membership) {
+            jQuery.ajax({
+                type: 'PUT',
+                url: proxy + server + '/memberships/' + membershipId + '.json' + "?key=" + key,
+                data: JSON.stringify(membership),
+                dataType: 'text',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    console.log('SUCCESS: ', data);
+                },
+                error: function (data) {
+                    console.log('ERROR: ', data);
+                },
+            });
+        }
 
         function saveGanttOnServer() {
 
@@ -428,32 +431,18 @@
                 if (task.hasOwnProperty("end")) {
                     issue.issue.due_date = (new Date(task.end)).format("yyyy-MM-dd");
                 }
-                
-                //reflect role
-                //     project.roles = roles[0].roles;
-                // //reflect assigs to user - role
-                // //one task - one user - many role
+
+                // var issueCreated = issue.issue.id.includes("tmp");
+                // var issueCreated = isNaN(issue.issue.id);
+
                 if (task.hasOwnProperty("assigs")) {
-                    //only get the first user
                     //issue - issue : 1 - 1.
+                    //get only the first user
+                    //assign only one user
                     if (task.assigs[0] != null) {
                         issue.issue.assigned_to_id = parseInt(task.assigs[0].resourceId, 10);
                     }
                 }
-
-                // task.assigs = [];
-                // if (issue.hasOwnProperty("assigned_to")) {
-                //     for (var j = 0; j < userToRole[issue.assigned_to.id].length; j++) {
-                //         var assig = {};
-                //         assig.id = "tmp_" + new Date().getTime() + "_" + i + j;
-                //         assig.resourceId = issue.assigned_to.id;
-                //         assig.roleId = userToRole[issue.assigned_to.id][j].id;
-                //         task.assigs.push(assig);
-                //     }
-                // }
-
-                // var issueCreated = issue.issue.id.includes("tmp");
-                // var issueCreated = isNaN(issue.issue.id);
 
                 if (isNaN(issue.issue.id)) {
                     //hard code project = 4
@@ -462,8 +451,32 @@
                 } else {
                     updateIssue(server, key, issue);
                 }
+
+                // //reflect assigs to user - role
+                // //one task - one user - many role
+                if (task.hasOwnProperty("assigs")) {
+                    //issue - issue : 1 - 1.
+                    //get only the first user
+                    //assign only one user
+                    if (task.assigs.length > 0) {
+                        var userId= parseInt(task.assigs[0].resourceId, 10);
+                        //Update membership
+                        var membership = {};
+                        membership.membership = {};
+                        membership.membership.role_ids = [];
+                        for (var j = 0; j < task.assigs.length; j++) {
+                            //update only the first user
+                            if (task.assigs[j].resourceId == userId) {
+                                membership.membership.role_ids.push(task.assigs[j].roleId);
+                            }
+                        }
+                        updateMembership(server, key, userId, membership);
+                    }
+                }
                 // task.level = 0; //TODO: examine task.level
             }
+
+            //  ge.reset();
 
 
             /*
