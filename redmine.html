@@ -149,8 +149,8 @@
                         task.status = issue.status.name;
                         task.canWrite = true;
                         task.start = (new Date(issue.start_date)).getTime();
-                        task.duration = 3;
                         task.end = (new Date(issue.due_date).getTime());
+                        task.duration = recomputeDuration(task.start, task.end);
 
                         //reflect assignees
                         task.assigs = [];
@@ -407,7 +407,7 @@
                     updateIssue(server, key, issue);
                 }
 
-                console.log("Issue: ", JSON.stringify(issue));
+                // console.log("Issue: ", JSON.stringify(issue));
 
                 // task.level = 0; //TODO: examine task.level
                 // task.status = issue.status.name;
@@ -425,8 +425,6 @@
                 //     assig.roleId = userToRole[issue.assigned_to.id][j].id;
                 //     task.assigs.push(assig);
                 // }
-
-
             }
 
             /*
