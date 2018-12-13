@@ -190,17 +190,15 @@
                     }
 
                     //iterate issue to find parent
-                    var level = 1;
                     while (childQueue.length > 0) {
                         var task = childQueue[0];
-                        task.level = level;
                         //check if parent task already in project
-                        var check = checkParent(project, task);
+                        var [check, level] = checkParent(project, task);
                         if (check < project.tasks.length) {
+                            task.level = level + 1;
                             project.tasks.splice(check + 1, 0, task);
                             childQueue.shift();
                         }
-                        level++;
                     }
 
                     // project.tasks.sort(function (a, b) {
@@ -225,14 +223,14 @@
                     console.log("Problem " + problem);
                 });
         });
-        
-        function checkParent(project, task){
+
+        function checkParent(project, task) {
             for (var i = 0; i < project.tasks.length; i++) {
                 if (task.parent_id == project.tasks[i].id) {
-                    return i;
+                    return [i, project.tasks[i].level];
                 }
             }
-            return project.task.length;
+            return [project.task.length, 0];
         }
 
         // function getProjectMemberShip(identifier, server,callback) {
@@ -446,7 +444,7 @@
 
             for (var i = 0; i < prj.tasks.length; i++) {
                 var task = prj.tasks[i];
-                var issue = {}; 
+                var issue = {};
                 issue.issue = {};
                 if (task.hasOwnProperty("id")) {
                     issue.issue.id = task.id;
