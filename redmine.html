@@ -147,6 +147,10 @@
 
                     //reflect task/issue
                     project.tasks = [];
+
+                    //store all child issue
+                    var childQueue = [];
+                    // travel all issue 
                     for (var i = 0; i < issues[0].issues.length; i++) {
                         var task = {};
 
@@ -176,7 +180,27 @@
                             }
                         }
 
-                        project.tasks.push(task);
+                        //push all child issue to childQueue
+                        if (issue.hasOwnProperty("parent")) {
+                            task.parent_id = issue.parent.id;
+                            childQueue.push(task);
+                        } else {
+                            project.tasks.push(task);
+                        }
+                    }
+
+                    //iterate issue to find parent
+                    var level = 1;
+                    while (childQueue.length > 0) {
+                        var task = childQueue[0];
+                        task.level = level;
+                        //check if parent task already in project
+                        var check = checkParent(project, task);
+                        if (check < project.tasks.length) {
+                            project.tasks.splice(check + 1, 0, task);
+                            childQueue.shift();
+                        }
+                        level++;
                     }
 
                     // project.tasks.sort(function (a, b) {
@@ -201,6 +225,15 @@
                     console.log("Problem " + problem);
                 });
         });
+        
+        function checkParent(project, task){
+            for (var i = 0; i < project.tasks.length; i++) {
+                if (task.parent_id == project.tasks[i].id) {
+                    return i;
+                }
+            }
+            return project.task.length;
+        }
 
         // function getProjectMemberShip(identifier, server,callback) {
         //     jQuery.getJSON('http://data.mtgox.com/api/1/BTCUSD/ticker', function (data) {
