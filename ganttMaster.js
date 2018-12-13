@@ -681,6 +681,12 @@ GanttMaster.prototype.saveGantt = function (forTransaction) {
   var saved = [];
   for (var i = 0; i < this.tasks.length; i++) {
     var task = this.tasks[i];
+    
+    //get parent task id
+    var parentTask = task.getParent();
+    if (parentTask != null) {
+      task.parent_id = parentTask.id;
+    }
     var cloned = task.clone();
 
     //shift back to server side timezone
