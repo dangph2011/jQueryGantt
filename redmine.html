@@ -459,14 +459,18 @@
             });
         }
 
-        function deleteRelation(server, key, relationId) {
+        function deleteRelation(server, key, relationId, task) {
             $.ajax({
                 type: "DELETE",
                 url: proxy + server + '/relations/' + relationId + ".json" + "?key=" + key,
                 dataType: 'text',
                 contentType: "application/json; charset=utf-8",
+                // async: false,
                 success: function (data) {
                     console.log('SUCCESS delete relation: ', data);
+                    if (task != null) {
+                        createRelationAfterDelete(server, key, task);
+                    }
                 },
                 error: function (data) {
                     console.log('ERROR delete relation: ', data);
@@ -474,6 +478,15 @@
             });
         }
 
+        function createRelationAfterDelete(server, key, task) {
+            var res = task.depends.split(",");
+            for (var j = 0; j < res.length; j++) {
+                var [parent_id, delay] = res[j].split(":");
+                delay = (delay == undefined) ? 0 : delay;
+                var relation = initRelation(task.id, PRECEDES, delay);
+                createRelation(server, key, parent_id, relation);
+            }
+        }
 
         function saveGanttOnServer() {
 
@@ -541,17 +554,38 @@
 
                 //Recreate related issue
                 //delete all in issue relation
-                var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
-                $.getJSON(issueUrl, function (resp) {
-                    if (resp.issue.hasOwnProperty("relations")) {
-                        if (resp.issue.relations.length > 0) {
-                            for (var j = 0; j < resp.issue.relations.length; j++) {
-                                var relationId = resp.issue.relations[j].id;
-                                deleteRelation(server, key, relationId);
+                if (task.hasOwnProperty("depends") && task.depends != "") {
+                    var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
+                    $.getJSON(issueUrl, function (resp) {
+                        if (resp.issue.hasOwnProperty("relations")) {
+                            if (resp.issue.relations.length > 0) {
+                                for (var j = 0; j < resp.issue.relations.length; j++) {
+                                    var relationId = resp.issue.relations[j].id;
+                                    deleteRelation(server, key, relationId, task);
+                                }
                             }
                         }
-                    }
-                });
+                        // var res = task.depends.split(",");
+                        // for (var j = 0; j < res.length; j++) {
+                        //     var [parent_id, delay] = res[j].split(":");
+                        //     delay = (delay == undefined) ? 0 : delay;
+                        //     var relation = initRelation(task.id, PRECEDES, delay);
+                        //     createRelation(server, key, parent_id, relation);
+                        // }
+                    });
+                } else {
+                    var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
+                    $.getJSON(issueUrl, function (resp) {
+                        if (resp.issue.hasOwnProperty("relations")) {
+                            if (resp.issue.relations.length > 0) {
+                                for (var j = 0; j < resp.issue.relations.length; j++) {
+                                    var relationId = resp.issue.relations[j].id;
+                                    deleteRelation(server, key, relationId);
+                                }
+                            }
+                        }
+                    });
+                }
 
                 // //reflect membership
                 // if (task.hasOwnProperty("assigs")) {
@@ -576,18 +610,19 @@
                 // task.level = 0; //TODO: examine task.level
             }
 
-            for (var i = 0; i < prj.tasks.length; i++) {
-                // update relation
-                if (task.hasOwnProperty("depends") && task.depends != "") {
-                    var res = task.depends.split(",");
-                    for (var j = 0; j < res.length; j++) {
-                        var [parent_id, delay] = res[j].split(":");
-                        delay = (delay == undefined) ? 0 : delay;
-                        var relation = initRelation(task.id, PRECEDES, delay);
-                        createRelation(server, key, parent_id, relation);
-                    }
-                }
-            }
+            // for (var i = 0; i < prj.tasks.length; i++) {
+            //     // update relation
+            //     var task = prj.tasks[i];
+            //     if (task.hasOwnProperty("depends") && task.depends != "") {
+            //         var res = task.depends.split(",");
+            //         for (var j = 0; j < res.length; j++) {
+            //             var [parent_id, delay] = res[j].split(":");
+            //             delay = (delay == undefined) ? 0 : delay;
+            //             var relation = initRelation(task.id, PRECEDES, delay);
+            //             createRelation(server, key, parent_id, relation);
+            //         }
+            //     }
+            // }
 
             //  ge.reset();
 
