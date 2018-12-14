@@ -568,44 +568,46 @@
                 if (isNaN(issue.issue.id)) {
                     issue.project_id = projectIdentifier;
                     createIssue(server, key, issue);
-
+                    if (task.hasOwnProperty("depends") && task.depends != "") {
+                        createRelate(server, key, task);
+                    }
                 } else {
                     updateIssue(server, key, issue);
-                }
-
-                //Recreate related issue
-                //delete all in issue relation
-                if (task.hasOwnProperty("depends") && task.depends != "") {
-                    var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
-                    $.getJSON(issueUrl, function (resp) {
-                        if (resp.issue.hasOwnProperty("relations")) {
-                            if (resp.issue.relations.length > 0) {
-                                for (var j = 0; j < resp.issue.relations.length; j++) {
-                                    var relationId = resp.issue.relations[j].id;
-                                    deleteAndCreateRelation(server, key, relationId, task);
+                    
+                    //Recreate related issue
+                    //delete all in issue relation
+                    if (task.hasOwnProperty("depends") && task.depends != "") {
+                        var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
+                        $.getJSON(issueUrl, function (resp) {
+                            if (resp.issue.hasOwnProperty("relations")) {
+                                if (resp.issue.relations.length > 0) {
+                                    for (var j = 0; j < resp.issue.relations.length; j++) {
+                                        var relationId = resp.issue.relations[j].id;
+                                        deleteAndCreateRelation(server, key, relationId, task);
+                                    }
                                 }
                             }
-                        }
-                        // var res = task.depends.split(",");
-                        // for (var j = 0; j < res.length; j++) {
-                        //     var [parent_id, delay] = res[j].split(":");
-                        //     delay = (delay == undefined) ? 0 : delay;
-                        //     var relation = initRelation(task.id, PRECEDES, delay);
-                        //     createRelation(server, key, parent_id, relation);
-                        // }
-                    });
-                } else {
-                    var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
-                    $.getJSON(issueUrl, function (resp) {
-                        if (resp.issue.hasOwnProperty("relations")) {
-                            if (resp.issue.relations.length > 0) {
-                                for (var j = 0; j < resp.issue.relations.length; j++) {
-                                    var relationId = resp.issue.relations[j].id;
-                                    deleteRelation(server, key, relationId);
+                            // var res = task.depends.split(",");
+                            // for (var j = 0; j < res.length; j++) {
+                            //     var [parent_id, delay] = res[j].split(":");
+                            //     delay = (delay == undefined) ? 0 : delay;
+                            //     var relation = initRelation(task.id, PRECEDES, delay);
+                            //     createRelation(server, key, parent_id, relation);
+                            // }
+                        });
+                    } else {
+                        var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
+                        $.getJSON(issueUrl, function (resp) {
+                            if (resp.issue.hasOwnProperty("relations")) {
+                                if (resp.issue.relations.length > 0) {
+                                    for (var j = 0; j < resp.issue.relations.length; j++) {
+                                        var relationId = resp.issue.relations[j].id;
+                                        deleteRelation(server, key, relationId);
+                                    }
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
 
                 // //reflect membership
