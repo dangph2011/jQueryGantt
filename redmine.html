@@ -191,13 +191,14 @@
 
                     //iterate issue to find parent
                     while (childQueue.length > 0) {
-                        var task = childQueue[0];
+                        var task =  childQueue.shift();;
                         //check if parent task already in project
                         var [check, level] = checkParent(project, task);
                         if (check < project.tasks.length) {
                             task.level = level + 1;
                             project.tasks.splice(check + 1, 0, task);
-                            childQueue.shift();
+                        } else {
+                            childQueue.push(task);
                         }
                     }
 
@@ -230,7 +231,7 @@
                     return [i, project.tasks[i].level];
                 }
             }
-            return [project.task.length, 0];
+            return [project.tasks.length, 0];
         }
 
         // function getProjectMemberShip(identifier, server,callback) {
