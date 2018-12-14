@@ -84,6 +84,7 @@
 
     <script type="text/javascript">
         var ge;
+        var PRECEDES = "precedes";
 
         var proxy = 'https://cors-anywhere.herokuapp.com/';
         var server = "http://159.65.9.28/redmine";
@@ -117,7 +118,7 @@
             var membershipPath = server + "/projects/" + projectIdentifier + "/memberships.json?callback=?";
 
             var issuePath = server + "/issues.json?status_id=*&project_id=" + projectIdentifier +
-                "&sort=start_date&callback=?";
+                "&include=relations&sort=start_date&callback=?";
             var rolePath = server + "/roles.json?callback=?";
 
             $.when($.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath))
@@ -178,6 +179,23 @@
                                 assig.roleId = userToRole[issue.assigned_to.id][j].id;
                                 task.assigs.push(assig);
                             }
+                        }
+
+                        // handle FS
+                        if (issue.relations.length > 0) {
+                            var depends = "";
+                            for (var j = 0; j < issue.relations.length; j++) {
+                                var relation = issue.relations[j];
+                                if (relation.relation_type == PRECEDES && relation.issue_to_id == issue.id) {
+                                    if (depends == "") {
+                                        depends = relation.issue_id + ":" + relation.delay;
+                                    } else {
+                                        depends += "," + relation.issue_id + ":" + relation.delay;
+                                    }
+                                }
+                            }
+                            task.depends = depends;
+                            // console.log("Depends: ", task);
                         }
 
                         //push all child issue to childQueue
