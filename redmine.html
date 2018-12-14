@@ -459,7 +459,23 @@
             });
         }
 
-        function deleteRelation(server, key, relationId, task) {
+        function deleteRelation(server, key, relationId) {
+            $.ajax({
+                type: "DELETE",
+                url: proxy + server + '/relations/' + relationId + ".json" + "?key=" + key,
+                dataType: 'text',
+                contentType: "application/json; charset=utf-8",
+                // async: false,
+                success: function (data) {
+                    console.log('SUCCESS delete relation: ', data);
+                },
+                error: function (data) {
+                    console.log('ERROR delete relation: ', data);
+                },
+            });
+        }
+
+        function deleteAndCreateRelation(server, key, relationId, task) {
             $.ajax({
                 type: "DELETE",
                 url: proxy + server + '/relations/' + relationId + ".json" + "?key=" + key,
@@ -469,16 +485,20 @@
                 success: function (data) {
                     console.log('SUCCESS delete relation: ', data);
                     if (task != null) {
-                        createRelationAfterDelete(server, key, task);
+                        createRelate(server, key, task);
                     }
                 },
-                error: function (data) {
-                    console.log('ERROR delete relation: ', data);
+                error: function (xhr, status, error) {
+                    if (error = "Not Found" && task != null) {
+                        createRelate(server, key, task);
+                    } else {
+                        console.log('ERROR delete relation: ', error);
+                    }
                 },
             });
         }
 
-        function createRelationAfterDelete(server, key, task) {
+        function createRelate(server, key, task) {
             var res = task.depends.split(",");
             for (var j = 0; j < res.length; j++) {
                 var [parent_id, delay] = res[j].split(":");
@@ -548,6 +568,7 @@
                 if (isNaN(issue.issue.id)) {
                     issue.project_id = projectIdentifier;
                     createIssue(server, key, issue);
+
                 } else {
                     updateIssue(server, key, issue);
                 }
@@ -561,7 +582,7 @@
                             if (resp.issue.relations.length > 0) {
                                 for (var j = 0; j < resp.issue.relations.length; j++) {
                                     var relationId = resp.issue.relations[j].id;
-                                    deleteRelation(server, key, relationId, task);
+                                    deleteAndCreateRelation(server, key, relationId, task);
                                 }
                             }
                         }
