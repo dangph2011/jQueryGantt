@@ -209,7 +209,7 @@
 
                     //iterate issue to find parent
                     while (childQueue.length > 0) {
-                        var task =  childQueue.shift();;
+                        var task = childQueue.shift();;
                         //check if parent task already in project
                         var [check, level] = checkParent(project, task);
                         if (check < project.tasks.length) {
@@ -330,7 +330,6 @@
                     task.end = (new Date(issue.due_date).getTime());
                     tasks.push(task);
                 }
-
                 console.log("Task/Issue: " + JSON.stringify(tasks));
                 // callback(resources);
             });
@@ -444,6 +443,38 @@
             });
         }
 
+        function createRelation(server, key, issueId, relation) {
+            jQuery.ajax({
+                type: 'POST',
+                url: proxy + server + '/issues/' + issueId + "/relations.json" + "?key=" + key,
+                data: JSON.stringify(relation),
+                dataType: 'text',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    console.log('SUCCESS create relation: ', data);
+                },
+                error: function (data) {
+                    console.log('ERROR create relation: ', data);
+                },
+            });
+        }
+
+        function deleteRelation(server, key, relationId) {
+            $.ajax({
+                type: "DELETE",
+                url: proxy + server + '/relations/' + relationId + ".json" + "?key=" + key,
+                dataType: 'text',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    console.log('SUCCESS delete relation: ', data);
+                },
+                error: function (data) {
+                    console.log('ERROR delete relation: ', data);
+                },
+            });
+        }
+
+
         function saveGanttOnServer() {
 
             //this is a simulation: save data to the local storage or to the textarea
@@ -508,6 +539,20 @@
                     updateIssue(server, key, issue);
                 }
 
+                //Recreate related issue
+                //delete all in issue relation
+                var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
+                $.getJSON(issueUrl, function (resp) {
+                    if (resp.issue.hasOwnProperty("relations")) {
+                        if (resp.issue.relations.length > 0) {
+                            for (var j = 0; j < resp.issue.relations.length; j++) {
+                                var relationId = resp.issue.relations[j].id;
+                                deleteRelation(server, key, relationId);
+                            }
+                        }
+                    }
+                });
+
                 // //reflect membership
                 // if (task.hasOwnProperty("assigs")) {
                 //     //issue - issue : 1 - 1.
@@ -529,6 +574,19 @@
                 //     }
                 // }
                 // task.level = 0; //TODO: examine task.level
+            }
+
+            for (var i = 0; i < prj.tasks.length; i++) {
+                // update relation
+                if (task.hasOwnProperty("depends") && task.depends != "") {
+                    var res = task.depends.split(",");
+                    for (var j = 0; j < res.length; j++) {
+                        var [parent_id, delay] = res[j].split(":");
+                        delay = (delay == undefined) ? 0 : delay;
+                        var relation = initRelation(task.id, PRECEDES, delay);
+                        createRelation(server, key, parent_id, relation);
+                    }
+                }
             }
 
             //  ge.reset();
@@ -578,6 +636,15 @@
 
             });
             */
+        }
+
+        function initRelation(issue_to_id, relation_type, delay) {
+            var relation = {};
+            relation.relation = {};
+            relation.relation.issue_to_id = parseInt(issue_to_id, 10);
+            relation.relation.relation_type = relation_type;
+            relation.relation.delay = parseInt(delay, 10);
+            return relation;
         }
 
         function getDemoProject() {
