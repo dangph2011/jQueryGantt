@@ -63,9 +63,17 @@ GridEditor.prototype.fillEmptyLines = function () {
       var lastTask;
       var start = new Date().getTime();
       var level = 0;
-      if (master.tasks[0]) {
+      //hailh
+	  /*
+	  if (master.tasks[0]) {
         start = master.tasks[0].start;
         level = master.tasks[0].level + 1;
+      }
+	  */
+	  var length = master.tasks.length;
+	  if (length>0) {		  
+        start = master.tasks[length-1].start;
+        level = master.tasks[length-1].level;
       }
 
       //fill all empty previouses
@@ -103,6 +111,15 @@ GridEditor.prototype.addTask = function (task, row, hideIfParentCollapsed) {
 
   //save row element on task
   task.rowElement = taskRow;
+   
+  taskRow.find("[name=depends]").tooltip({
+    classes: {
+    "ui-tooltip": "highlight"
+    },
+       content: "taskID:day, taskID:day",
+       track:true
+    });
+
 
   this.bindRowEvents(task, taskRow);
 
@@ -162,7 +179,7 @@ GridEditor.prototype.refreshTaskRow = function (task) {
   row.find("[name=name]").val(task.name);
   row.find("[name=code]").val(task.code);
   row.find("[status]").attr("status", task.status);
-
+  //hailh
   row.find("[name=duration]").val(durationToString(task.duration)).prop("readonly",!canWrite || task.isParent() && task.master.shrinkParent);
   row.find("[name=progress]").val(task.progress).prop("readonly",!canWrite || task.progressByWorklog==true);
   row.find("[name=startIsMilestone]").prop("checked", task.startIsMilestone);
@@ -245,12 +262,96 @@ GridEditor.prototype.bindRowEvents = function (task, taskRow) {
   self.bindRowExpandEvents(task, taskRow);
 
   if (this.master.permissions.canSeePopEdit) {
+  
+    $.JST.loadDecorator("DEPEND_ROW", function(depTr,  dep){
+				depTr.find(".delDep").click(function(){$(this).closest("tr").remove();event.stopPropagation();event.preventDefault();});
+				
+				});
+		
     taskRow.find(".edit").click(function () {self.openFullEditor(task, false)});
+	//hailh depends editor
+	taskRow.find("[name=depends]").dblclick(
+		
+		function () {
+			
+			console.log(self.master);
+			
+			console.log(task);
+			//task.depends="3:3";
+			//self.master.redraw();
+			var dependsEditor = $.JST.createFromTemplate({}, "DEPENDS_EDITOR");
+			dependsEditor.attr("alertonchange","true");
+			var ndo = createModalPopup(350, 250).append(dependsEditor);//.append("<div style='height:800px; background-color:red;'></div>"
+			var depTbl=dependsEditor.find("#dependsTable");
+			
+			parts = task.depends.split(",");
+			
+			depends =[];	
+			for(var i=0; i<parts.length; i++){
+				depend = parts[i].split(":");
+				var depId = depend[0];
+				var day=0;
+				if(depend.length>1)
+					day=depend[1];
+				depends.push({name:depId,day:day});
+			}
+			
+			for (var i=0;i<depends.length;i++){
+				var dep=depends[i];
 
-    taskRow.dblclick(function (ev) { //open editor only if no text has been selected
-      if (window.getSelection().toString().trim()=="")
-        self.openFullEditor(task, $(ev.target).closest(".taskAssigs").size()>0)
-      });
+				depTbl.append($.JST.createFromTemplate(dep, "DEPEND_ROW"))
+			}
+
+
+			//bind add resource
+			dependsEditor.find("#addDepend").click(function(){
+				depTbl.append($.JST.createFromTemplate({id:"",day:0}, "DEPEND_ROW"))
+			});
+			
+			//bind add resource
+			dependsEditor.find("#depSaveButton").click(function(){
+				task.depends="";
+				 self.master.beginTransaction();
+				  
+				dependsEditor.find("tr[dep]").each(function () {
+					var trDep = $(this);
+					var depId = trDep.find("[name=depId]").val();
+					var day = trDep.find("[name=day]").val(); // from smartcombo text input part				
+					dep={name:depId, day:day};
+					task.depends += depId+":"+day;
+					console.log(dep);
+				
+			  });  
+			  
+
+			  if (self.master.endTransaction()) {
+				//taskEditor.find(":input").updateOldValue();
+				//task.master.redraw();
+				 self.master.updateLinks(task);
+         self.master.changeTaskDeps(task); //dates recomputation from dependencies
+				closeBlackPopup();
+			  }
+			  
+			  console.log('SAVED!!!');
+
+				
+			});
+			  
+			  
+			
+			
+		}
+	);//hailh
+
+    taskRow.find("[id=taskAssigs]").click(function (ev) { //open editor only if no text has been selected
+      self.openFullEditor(task, true); //hailh
+	  /*
+	  if (window.getSelection().toString().trim()=="")
+        self.openFullEditor(task, $(ev.target).closest(".taskAssigs").size()>0); //hailh
+      */
+	  });
+	  
+	  
   }
   //prof.stop();
 };
@@ -628,7 +729,7 @@ GridEditor.prototype.openFullEditor = function (task, editOnlyAssig) {
     //save task
     taskEditor.bind("saveFullEditor.gantt",function () {
       //console.debug("saveFullEditor");
-      var task = self.master.getTask(taskId); // get task again because in case of rollback old task is lost
+        var task = self.master.getTask(taskId); // get task again because in case of rollback old task is lost
 
       self.master.beginTransaction();
       task.name = taskEditor.find("#name").val();
@@ -646,57 +747,20 @@ GridEditor.prototype.openFullEditor = function (task, editOnlyAssig) {
 
       //set assignments
       var cnt=0;
+	  task.assigs=[];
       taskEditor.find("tr[assId]").each(function () {
         var trAss = $(this);
         var assId = trAss.attr("assId");
-        var resId = trAss.find("[name=resourceId]").val();
-        var resName = trAss.find("[name=resourceId_txt]").val(); // from smartcombo text input part
-        var roleId = trAss.find("[name=roleId]").val();
-        var effort = millisFromString(trAss.find("[name=effort]").val(),true);
-
-        //check if the selected resource exists in ganttMaster.resources
-        var res= self.master.getOrCreateResource(resId,resName);
-
-        //if resource is not found nor created
-        if (!res)
-          return;
-
-        //check if an existing assig has been deleted and re-created with the same values
-        var found = false;
-        for (var i = 0; i < task.assigs.length; i++) {
-          var ass = task.assigs[i];
-
-          if (assId == ass.id) {
-            ass.effort = effort;
-            ass.roleId = roleId;
-            ass.resourceId = res.id;
-            ass.touched = true;
-            found = true;
-            break;
-
-          } else if (roleId == ass.roleId && res.id == ass.resourceId) {
-            ass.effort = effort;
-            ass.touched = true;
-            found = true;
-            break;
-
-          }
-        }
-
-        if (!found && resId && roleId) { //insert
-          cnt++;
-          var ass = task.createAssignment("tmp_" + new Date().getTime()+"_"+cnt, resId, roleId, effort);
-          ass.touched = true;
-        }
-
+        //var resId = trAss.find("[name=resourceId]").val();
+        var resName = trAss.find("[name=resource]").val(); // from smartcombo text input part
+        var role = trAss.find("[name=role]").val();
+        //var effort = millisFromString(trAss.find("[name=effort]").val(),true);         
+		ass={resource:resName, role:role};
+		task.assigs.push(ass);
+        
       });
 
-      //remove untouched assigs
-      task.assigs = task.assigs.filter(function (ass) {
-        var ret = ass.touched;
-        delete ass.touched;
-        return ret;
-      });
+     
 
       //change dates
       task.setPeriod(Date.parseString(taskEditor.find("#start").val()).getTime(), Date.parseString(taskEditor.find("#end").val()).getTime() + (3600000 * 22));
