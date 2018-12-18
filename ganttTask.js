@@ -62,9 +62,9 @@ function Task(id, name, code, level, start, end, duration, collapsed) {
 
   this.collapsed = collapsed;
 
-  //permissions
+  //permissions 
   // by default all true, but must be inherited from parent
-  this.canWrite = true;
+  this.canWrite = true; //hailh
   this.canAdd = true;
   this.canDelete = true;
   this.canAddIssue = true;
@@ -86,15 +86,20 @@ Task.prototype.clone = function () {
     }
   return ret;
 };
-
+//hailh
 Task.prototype.getAssigsString = function () {
   var ret = "";
   for (var i = 0; i < this.assigs.length; i++) {
     var ass = this.assigs[i];
-    var res = this.master.getResource(ass.resourceId);
+    if(ass.role=="Người thực hiện"){
+		ret = ret + ass.resource+" ";
+	}
+	/*	
+	var res = this.master.getResource(ass.resourceId);
     if (res) {
       ret = ret + (ret == "" ? "" : ", ") + res.name;
     }
+	*/
   }
   return ret;
 };
