@@ -519,56 +519,384 @@
       return ret;
     }
 
+    function createIssue(server, key, issue) {
+      jQuery.ajax({
+        type: 'POST',
+        url: proxy + server + '/issues.json' + "?key=" + key,
+        data: JSON.stringify(issue),
+        dataType: 'text',
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+          console.log('SUCCESS: ', data);
+        },
+        error: function (data) {
+          console.log('ERROR: ', data);
+        },
+      });
+    }
+
+    function updateIssue(server, key, issue) {
+      jQuery.ajax({
+        type: 'PUT',
+        url: proxy + server + '/issues/' + issue.issue.id + '.json' + "?key=" + key,
+        data: JSON.stringify(issue),
+        dataType: 'text',
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+          console.log('SUCCESS: ', data);
+        },
+        error: function (data) {
+          console.log('ERROR: ', data);
+        },
+      });
+    }
+
+    function deleteIssues(server, key, issueIds) {
+      for (var i = 0; i < issueIds.length; i++) {
+        var issueId = issueIds[i];
+        deleteIssue(server, key, issueId);
+      }
+    }
+
+    function deleteIssue(server, key, issueId) {
+      $.ajax({
+        type: "DELETE",
+        url: proxy + server + '/issues/' + issueId + ".json" + "?key=" + key,
+        dataType: 'text',
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+          console.log('SUCCESS: ', data);
+        },
+        error: function (data) {
+          console.log('ERROR: ', data);
+        },
+      });
+    }
+
+    function updateMembership(server, key, membershipId, membership) {
+      jQuery.ajax({
+        type: 'PUT',
+        url: proxy + server + '/memberships/' + membershipId + '.json' + "?key=" + key,
+        data: JSON.stringify(membership),
+        dataType: 'text',
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+          console.log('SUCCESS: ', data);
+        },
+        error: function (data) {
+          console.log('ERROR: ', data);
+        },
+      });
+    }
+
+    function createRelation(server, key, issueId, relation) {
+      jQuery.ajax({
+        type: 'POST',
+        url: proxy + server + '/issues/' + issueId + "/relations.json" + "?key=" + key,
+        data: JSON.stringify(relation),
+        dataType: 'text',
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+          console.log('SUCCESS create relation: ', data);
+        },
+        error: function (data) {
+          console.log('ERROR create relation: ', data);
+        },
+      });
+    }
+
+    function deleteRelation(server, key, relationId) {
+      $.ajax({
+        type: "DELETE",
+        url: proxy + server + '/relations/' + relationId + ".json" + "?key=" + key,
+        dataType: 'text',
+        contentType: "application/json; charset=utf-8",
+        // async: false,
+        success: function (data) {
+          console.log('SUCCESS delete relation: ', data);
+        },
+        error: function (data) {
+          console.log('ERROR delete relation: ', data);
+        },
+      });
+    }
+
+    function deleteAndCreateRelation(server, key, relationId, task) {
+      $.ajax({
+        type: "DELETE",
+        url: proxy + server + '/relations/' + relationId + ".json" + "?key=" + key,
+        dataType: 'text',
+        contentType: "application/json; charset=utf-8",
+        // async: false,
+        success: function (data) {
+          console.log('SUCCESS delete relation: ', data);
+          if (task != null) {
+            createRelate(server, key, task);
+          }
+        },
+        error: function (xhr, status, error) {
+          if (error = "Not Found" && task != null) {
+            createRelate(server, key, task);
+          } else {
+            console.log('ERROR delete relation: ', error);
+          }
+        },
+      });
+    }
+
+    function createRelate(server, key, task) {
+      var res = task.depends.split(",");
+      for (var j = 0; j < res.length; j++) {
+        var [parent_id, delay] = res[j].split(":");
+        delay = (delay == undefined) ? 0 : delay;
+        var relation = initRelation(task.id, PRECEDES, delay);
+        createRelation(server, key, parent_id, relation);
+      }
+    }
+
+    function createIssue(server, key, issue) {
+      jQuery.ajax({
+        type: 'POST',
+        url: proxy + server + '/issues.json' + "?key=" + key,
+        data: JSON.stringify(issue),
+        dataType: 'text',
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+          console.log('SUCCESS: ', data);
+        },
+        error: function (data) {
+          console.log('ERROR: ', data);
+        },
+      });
+    }
+
+    function updateIssue(server, key, issue) {
+      jQuery.ajax({
+        type: 'PUT',
+        url: proxy + server + '/issues/' + issue.issue.id + '.json' + "?key=" + key,
+        data: JSON.stringify(issue),
+        dataType: 'text',
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+          console.log('SUCCESS: ', data);
+        },
+        error: function (data) {
+          console.log('ERROR: ', data);
+        },
+      });
+    }
+
+    function deleteIssues(server, key, issueIds) {
+      for (var i = 0; i < issueIds.length; i++) {
+        var issueId = issueIds[i];
+        deleteIssue(server, key, issueId);
+      }
+    }
+
+    function deleteIssue(server, key, issueId) {
+      $.ajax({
+        type: "DELETE",
+        url: proxy + server + '/issues/' + issueId + ".json" + "?key=" + key,
+        dataType: 'text',
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+          console.log('SUCCESS: ', data);
+        },
+        error: function (data) {
+          console.log('ERROR: ', data);
+        },
+      });
+    }
+
+    function updateMembership(server, key, membershipId, membership) {
+      jQuery.ajax({
+        type: 'PUT',
+        url: proxy + server + '/memberships/' + membershipId + '.json' + "?key=" + key,
+        data: JSON.stringify(membership),
+        dataType: 'text',
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+          console.log('SUCCESS: ', data);
+        },
+        error: function (data) {
+          console.log('ERROR: ', data);
+        },
+      });
+    }
+
+    function createRelation(server, key, issueId, relation) {
+      jQuery.ajax({
+        type: 'POST',
+        url: proxy + server + '/issues/' + issueId + "/relations.json" + "?key=" + key,
+        data: JSON.stringify(relation),
+        dataType: 'text',
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+          console.log('SUCCESS create relation: ', data);
+        },
+        error: function (data) {
+          console.log('ERROR create relation: ', data);
+        },
+      });
+    }
+
+    function deleteRelation(server, key, relationId) {
+      $.ajax({
+        type: "DELETE",
+        url: proxy + server + '/relations/' + relationId + ".json" + "?key=" + key,
+        dataType: 'text',
+        contentType: "application/json; charset=utf-8",
+        // async: false,
+        success: function (data) {
+          console.log('SUCCESS delete relation: ', data);
+        },
+        error: function (data) {
+          console.log('ERROR delete relation: ', data);
+        },
+      });
+    }
+
+    function deleteAndCreateRelation(server, key, relationId, task) {
+      $.ajax({
+        type: "DELETE",
+        url: proxy + server + '/relations/' + relationId + ".json" + "?key=" + key,
+        dataType: 'text',
+        contentType: "application/json; charset=utf-8",
+        // async: false,
+        success: function (data) {
+          console.log('SUCCESS delete relation: ', data);
+          if (task != null) {
+            createRelate(server, key, task);
+          }
+        },
+        error: function (xhr, status, error) {
+          if (error = "Not Found" && task != null) {
+            createRelate(server, key, task);
+          } else {
+            console.log('ERROR delete relation: ', error);
+          }
+        },
+      });
+    }
+
+    function createRelate(server, key, task) {
+      var res = task.depends.split(",");
+      for (var j = 0; j < res.length; j++) {
+        var [parent_id, delay] = res[j].split(":");
+        delay = (delay == undefined) ? 0 : delay;
+        var relation = initRelation(task.id, PRECEDES, delay);
+        createRelation(server, key, parent_id, relation);
+      }
+    }
+
+    function initRelation(issue_to_id, relation_type, delay) {
+      var relation = {};
+      relation.relation = {};
+      relation.relation.issue_to_id = parseInt(issue_to_id, 10);
+      relation.relation.relation_type = relation_type;
+      relation.relation.delay = parseInt(delay, 10);
+      return relation;
+    }
 
     function saveGanttOnServer() {
 
       //this is a simulation: save data to the local storage or to the textarea
       saveInLocalStorage();
 
-      /*
-      var prj = ge.saveProject();
-
-      delete prj.resources;
-      delete prj.roles;
-
-      var prof = new Profiler("saveServerSide");
-      prof.reset();
-
-      if (ge.deletedTaskIds.length>0) {
-        if (!confirm("TASK_THAT_WILL_BE_REMOVED\n"+ge.deletedTaskIds.length)) {
+      //deleted task
+      if (ge.deletedTaskIds.length > 0) {
+        if (confirm("TASK_THAT_WILL_BE_REMOVED\n" + ge.deletedTaskIds.length)) {
+          //deleted Task
+          deleteIssues(server, key, ge.deletedTaskIds);
+        } else {
           return;
         }
       }
 
-      $.ajax("ganttAjaxController.jsp", {
-        dataType:"json",
-        data: {CM:"SVPROJECT",prj:JSON.stringify(prj)},
-        type:"POST",
+      //up to date Task
+      var prj = ge.saveProject();
 
-        success: function(response) {
-          if (response.ok) {
-            prof.stop();
-            if (response.project) {
-              ge.loadProject(response.project); //must reload as "tmp_" ids are now the good ones
-            } else {
-              ge.reset();
-            }
-          } else {
-            var errMsg="Errors saving project\n";
-            if (response.message) {
-              errMsg=errMsg+response.message+"\n";
-            }
+      for (var i = 0; i < prj.tasks.length; i++) {
+        var task = prj.tasks[i];
+        var issue = {};
+        issue.issue = {};
+        if (task.hasOwnProperty("id")) {
+          issue.issue.id = task.id;
+        }
+        if (task.hasOwnProperty("name")) {
+          issue.issue.subject = task.name;
+        }
+        if (task.hasOwnProperty("progress")) {
+          issue.issue.done_ratio = task.progress;
+        }
+        if (task.hasOwnProperty("description")) {
+          issue.issue.description = task.description;
+        }
+        if (task.hasOwnProperty("start")) {
+          issue.issue.start_date = (new Date(task.start)).format("yyyy-MM-dd");
+        }
 
-            if (response.errorMessages.length) {
-              errMsg += response.errorMessages.join("\n");
-            }
+        if (task.hasOwnProperty("parent_id")) {
+          issue.issue.parent_issue_id = task.parent_id;
+        }
 
-            alert(errMsg);
+        if (task.hasOwnProperty("end")) {
+          issue.issue.due_date = (new Date(task.end)).format("yyyy-MM-dd");
+        }
+
+        // var issueCreated = issue.issue.id.includes("tmp");
+        // var issueCreated = isNaN(issue.issue.id);
+
+        if (task.hasOwnProperty("assigs")) {
+          //issue - issue : 1 - 1.
+          //get only the first user
+          //assign only one user
+          if (task.assigs[0] != null) {
+            issue.issue.assigned_to_id = parseInt(task.assigs[0].resourceId, 10);
           }
         }
 
-      });
-      */
+        console.log("issue: " + JSON.stringify(issue));
+        
+        if (isNaN(issue.issue.id)) {
+          issue.project_id = projectIdentifier;
+          createIssue(server, key, issue);
+          if (task.hasOwnProperty("depends") && task.depends != "") {
+            createRelate(server, key, task);
+          }
+        } else {
+          updateIssue(server, key, issue);
+
+          //Recreate related issue
+          //delete all in issue relation
+          if (task.hasOwnProperty("depends") && task.depends != "") {
+            var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
+            var t = task;
+            $.getJSON(issueUrl, function (resp) {
+              if (resp.issue.hasOwnProperty("relations")) {
+                if (resp.issue.relations.length > 0) {
+                  for (var j = 0; j < resp.issue.relations.length; j++) {
+                    var relationId = resp.issue.relations[j].id;
+                    deleteAndCreateRelation(server, key, relationId, t);
+                  }
+                }
+              }
+            });
+          } else {
+            var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
+            $.getJSON(issueUrl, function (resp) {
+              if (resp.issue.hasOwnProperty("relations")) {
+                if (resp.issue.relations.length > 0) {
+                  for (var j = 0; j < resp.issue.relations.length; j++) {
+                    var relationId = resp.issue.relations[j].id;
+                    deleteRelation(server, key, relationId);
+                  }
+                }
+              }
+            });
+          }
+        }
+      }
     }
 
     function newProject() {
