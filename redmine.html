@@ -573,17 +573,18 @@
                     }
                 } else {
                     updateIssue(server, key, issue);
-                    
+
                     //Recreate related issue
                     //delete all in issue relation
                     if (task.hasOwnProperty("depends") && task.depends != "") {
                         var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
+                        var t = task;
                         $.getJSON(issueUrl, function (resp) {
                             if (resp.issue.hasOwnProperty("relations")) {
                                 if (resp.issue.relations.length > 0) {
                                     for (var j = 0; j < resp.issue.relations.length; j++) {
                                         var relationId = resp.issue.relations[j].id;
-                                        deleteAndCreateRelation(server, key, relationId, task);
+                                        deleteAndCreateRelation(server, key, relationId, t);
                                     }
                                 }
                             }
@@ -1058,6 +1059,11 @@
             var ndo = createModalPopup(400, 500).append(resourceEditor);
         }
 
+        function setFillter() {
+            var filter = $.JST.createFromTemplate({}, "TASK_FILTER");
+            var ndo = createModalPopup(400, 500).append(filter);
+        }
+
         function initializeHistoryManagement() {
 
             //si chiede al server se c'è della hisory per la root
@@ -1242,9 +1248,10 @@
       <span class="ganttButtonSeparator"></span>
       <button onclick="$('#workSpace').trigger('fullScreen.gantt');return false;" class="button textual icon" title="FULLSCREEN" id="fullscrbtn"><span class="teamworkIcon">@</span></button>
       <button onclick="ge.element.toggleClass('colorByStatus' );return false;" class="button textual icon"><span class="teamworkIcon">&sect;</span></button>
-
     <button onclick="editResources();" class="button textual requireWrite" title="edit resources"><span class="teamworkIcon">M</span></button>
-      &nbsp; &nbsp; &nbsp; &nbsp;
+    <button onclick="setFillter();" class="button textual requireWrite" title="edit resources"><span class="teamworkIcon">&#x66;</span></button>
+      
+    &nbsp; &nbsp; &nbsp; &nbsp;
     <button onclick="saveGanttOnServer();" class="button first big requireWrite" title="Save">Save</button>
     <button onclick='newProject();' class='button requireWrite newproject'><em>clear project</em></button>
     <button class="button login" title="login/enroll" onclick="loginEnroll($(this));" style="display:none;">login/enroll</button>
@@ -1459,6 +1466,18 @@
     <div style="text-align: right; padding-top: 20px"><button id="resSaveButton" class="button big">Save</button></div>
   </div>
   -->
+        </div>
+
+        <div class="__template__" type="TASK_FILTER">
+            <h2>Assignments</h2>
+            <table cellspacing="1" cellpadding="0" width="100%" id="assigsTable">
+                <tr>
+                    <th style="width:100px;">name</th>
+                    <th style="width:70px;">Role</th>
+                    <th style="width:30px;">est.wklg.</th>
+                    <th style="width:30px;" id="addAssig"><span class="teamworkIcon" style="cursor: pointer">+</span></th>
+                </tr>
+            </table>    
         </div>
 
 
