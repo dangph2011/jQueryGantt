@@ -82,6 +82,14 @@
 
   <script type="text/javascript">
     var ge;
+
+    var PRECEDES = "precedes";
+
+    var proxy = 'https://cors-anywhere.herokuapp.com/';
+    var server = "http://159.65.9.28/redmine";
+    var projectIdentifier = 1;
+    var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
+
     $(function () {
 
       $("#tooltip-3").tooltip({
@@ -102,26 +110,153 @@
       //in order to force compute the best-fitting zoom level
       delete ge.gantt.zoom;
 
-      var project = loadFromLocalStorage();
+      // var project = loadFromLocalStorage();
 
-      if (!project.canWrite)
-        $(".ganttButtonBar button.requireWrite").attr("disabled", "true");
+      //hardcode server and project identifier
+      var membershipPath = server + "/projects/" + projectIdentifier + "/memberships.json?callback=?";
 
-      ge.loadProject(project);
-      ge.checkpoint(); //empty the undo stack
-      /*
-      task = ge.getTask(-8);
-      console.log(task);
-      task.depends="3:3";
-  
-      ge.beginTransaction();
-      ge.redraw();
-      ge.updateLinks(task);
-  
-      ge.endTransaction();
-      */
+      var issuePath = server + "/issues.json?status_id=*&project_id=" + projectIdentifier +
+        "&include=relations&sort=start_date&callback=?";
+      var rolePath = server + "/roles.json?callback=?";
 
+      $.when($.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath))
+        .then(function (memberships, issues, roles) {
+
+          var project = {};
+
+          //reflect membership/user/resources
+          project.resources = [];
+          console.log("mbs: ", memberships);
+          //map user to rolesg
+          // var userToRole = {};
+          for (var i = 0; i < memberships[0].memberships.length; i++) {
+            if (memberships[0].memberships[i].hasOwnProperty("user")) {
+              project.resources.push(memberships[0].memberships[i].user);
+              // userToRole[memberships[0].memberships[i].user.id] = memberships[0].memberships[i].roles;
+            } else if (memberships[0].memberships[i].hasOwnProperty("group")) {
+              project.resources.push(memberships[0].memberships[i].group);
+              // userToRole[memberships[0].memberships[i].group.id] = memberships[0].memberships[i].roles;
+            }
+          }
+
+          //reflect role
+          // project.roles = roles[0].roles;
+
+          project.roles = [{
+              "id": "1",
+              "name": "Người thực hiện"
+            },
+            {
+              "id": "2",
+              "name": "Người theo dõi"
+            }
+          ];
+
+          //reflect task/issue
+          project.tasks = [];
+
+          //store all child issue
+          var childQueue = [];
+          // travel all issue 
+          for (var i = 0; i < issues[0].issues.length; i++) {
+            var task = {};
+
+            var issue = issues[0].issues[i];
+            task.id = issue.id;
+            task.code = issue.id;
+            task.name = issue.subject;
+            task.progress = issue.done_ratio;
+            task.description = issue.description;
+            task.level = 0; //TODO: examine task.level
+            task.status = issue.status.name;
+            task.canWrite = true;
+            task.start = (new Date(issue.start_date)).getTime();
+            task.end = (new Date(issue.due_date).getTime());
+            task.duration = recomputeDuration(task.start, task.end);
+
+            //reflect assignees
+            //one task - one user - many role
+            task.assigs = [];
+            if (issue.hasOwnProperty("assigned_to")) {
+              // for (var j = 0; j < userToRole[issue.assigned_to.id].length; j++) {
+              var assig = {};
+              assig.id = "tmp_" + new Date().getTime() + "_" + i + j;
+              assig.resourceId = issue.assigned_to.id;
+              assig.roleId = 1;
+              task.assigs.push(assig);
+              // }
+            }
+
+            // handle FS
+            if (issue.relations.length > 0) {
+              var depends = "";
+              for (var j = 0; j < issue.relations.length; j++) {
+                var relation = issue.relations[j];
+                if (relation.relation_type == PRECEDES && relation.issue_to_id == issue.id) {
+                  if (depends == "") {
+                    depends = relation.issue_id + ":" + relation.delay;
+                  } else {
+                    depends += "," + relation.issue_id + ":" + relation.delay;
+                  }
+                }
+              }
+              task.depends = depends;
+              // console.log("Depends: ", task);
+            }
+
+            //push all child issue to childQueue
+            if (issue.hasOwnProperty("parent")) {
+              task.parent_id = issue.parent.id;
+              childQueue.push(task);
+            } else {
+              project.tasks.push(task);
+            }
+          }
+
+          //iterate issue to find parent
+          while (childQueue.length > 0) {
+            var task = childQueue.shift();;
+            //check if parent task already in project
+            var [check, level] = checkParent(project, task);
+            if (check < project.tasks.length) {
+              task.level = level + 1;
+              project.tasks.splice(check + 1, 0, task);
+            } else {
+              childQueue.push(task);
+            }
+          }
+
+          // project.tasks.sort(function (a, b) {
+          //     return a.id - b.id;
+          // });
+
+          project.canWrite = true;
+          project.canDelete = true;
+          project.canWriteOnParent = true;
+          project.canAdd = true;
+
+          console.log("Task: ", project);
+          // var project = getDemoProject();
+
+          if (!project.canWrite)
+            $(".ganttButtonBar button.requireWrite").attr("disabled", "true");
+          ge.loadProject(project);
+          ge.checkpoint(); //empty the undo stack
+
+        }).fail(function (problem) {
+          // handle errors (some request has failed)
+          console.log("Problem " + problem);
+        });
     });
+
+    function checkParent(project, task) {
+      for (var i = 0; i < project.tasks.length; i++) {
+        if (task.parent_id == project.tasks[i].id) {
+          return [i, project.tasks[i].level];
+        }
+      }
+      return [project.tasks.length, 0];
+    }
 
     function getDemoProject() {
       //console.debug("getDemoProject")
