@@ -215,7 +215,7 @@ Ganttalendar.prototype.drawTask = function (task) {
 	//console.debug("drawTask", task.name,this.master.showBaselines,this.taskHeight);
   var self = this;
   //var prof = new Profiler("ganttDrawTask");
-
+	//if (true) {
 	if (self.master.showBaselines) {
 		var baseline = self.master.baselines[task.id];
 		if (baseline) {
@@ -227,8 +227,55 @@ Ganttalendar.prototype.drawTask = function (task) {
 	}
 
 	var taskBox = $(_createTaskSVG(task));
+	/*
+	   $(taskBox).tooltip({
+               content: "<strong>Hi!</strong><br>hello",
+               track:true
+            });
+	 taskBox.tooltip({
+               content: "<strong>Hi!</strong><br>hello",
+               track:true
+            });
+			
   task.ganttElement = taskBox;
-
+  
+  task.rowElement.tooltip({
+               content: "<strong>Hi!</strong><br>hello",
+               track:true
+            });
+ $(task.rowElement).tooltip({
+               content: "<strong>Hi!</strong><br>hello",
+               track:true
+            });
+			*/
+			
+			//tooltip
+		var label = "<b>" + task.name + "</b>";
+		label += "<br>";
+		
+		
+		label += "<b>Status:</b> " + task.status;
+		if(task.assigs.length>0){
+			label += "<br>";
+			label += "<b>Assign:</b> " + task.assigs[0].resource;
+		}
+		label += "<br>";
+		label += "<b>Start:</b> " + new Date(task.start).format();
+		
+		label += "<br>";
+		label += "<b>End:</b> " + new Date(task.end).format();
+		label += "<br>";
+		label += "<b>Duration:</b> " + task.duration;
+		label += "<br>";
+		label += "<b>Progress:</b> " + task.progress + "%";
+		
+    $( "#"+task.id ).tooltip({
+    classes: {
+    "ui-tooltip": "highlight"
+    },
+       content: label,
+       track:true
+    });
 
   if (self.showCriticalPath && task.isCritical)
     taskBox.addClass("critical");
@@ -255,6 +302,13 @@ Ganttalendar.prototype.drawTask = function (task) {
           self.master.editor.openFullEditor(task,false);
       }).mouseenter(function () {
         //bring to top
+		//alert('mouser enter');//hailh
+		
+	
+
+		
+		
+		console.log(task);
         var el = $(this);
         if (!self.linkOnProgress) {
           $("[class*=linkHandleSVG]").hide();
@@ -407,7 +461,8 @@ Ganttalendar.prototype.drawTask = function (task) {
 			width : Math.max(Math.round((task.end - task.start) * self.fx), 1),
 			height: (self.master.showBaselines ? self.taskHeight / 1.3 : self.taskHeight)
 		};
-    var taskSvg = svg.svg(self.tasksGroup, dimensions.x, dimensions.y, dimensions.width, dimensions.height, {class:"taskBox taskBoxSVG taskStatusSVG", status:task.status, taskid:task.id,fill:task.color||"#eee" });
+	//hailh
+    var taskSvg = svg.svg(self.tasksGroup, dimensions.x, dimensions.y, dimensions.width, dimensions.height, {class:"taskBox taskBoxSVG taskStatusSVG", title:"<strong color=000>olala</strong>", id:task.id, status:task.status, taskid:task.id,fill:task.color||"yellow" });
 
     //svg.title(taskSvg, task.name);
     //external box
@@ -428,9 +483,9 @@ Ganttalendar.prototype.drawTask = function (task) {
         svg.text(taskSvg, (task.progress > 90 ? 100 : task.progress) + "%", (self.master.rowHeight - 5) / 2, (task.progress > 100 ? "!!! " : "") + task.progress + "%", textStyle);
       }
     }
-
+    //hailh
 		if (task.isParent())
-      svg.rect(taskSvg, 0, 0, "100%", 3, {fill:"#000"});
+      svg.rect(taskSvg, 0, 0, "100%", 3, {fill:"yellow"});
 
     if (task.startIsMilestone) {
       svg.image(taskSvg, -9, dimensions.height/2-9, 18, 18, self.master.resourceUrl +"milestone.png")
@@ -448,12 +503,17 @@ Ganttalendar.prototype.drawTask = function (task) {
       svg.circle(taskSvg, -self.resizeZoneWidth,  dimensions.height/2,dimensions.height/3, {class:"taskLinkStartSVG linkHandleSVG", transform:"translate("+(-dimensions.height/3+1)+")"});
       svg.circle(taskSvg, dimensions.width+self.resizeZoneWidth,dimensions.height/2,dimensions.height/3, {class:"taskLinkEndSVG linkHandleSVG", transform:"translate("+(dimensions.height/3-1)+")"});
     }
+	
+	
+
+		
     return taskSvg
   }
 
 
 	function _createBaselineSVG(task, baseline) {
 		var svg = self.svg;
+		//alert('hailh');
 
 		var dimensions = {
 			x     : Math.round((baseline.startDate - self.startMillis) * self.fx),
@@ -480,7 +540,7 @@ Ganttalendar.prototype.drawTask = function (task) {
 
 		$(taskSvg).attr("data-label", label).on("click", function (event) {
 			showBaselineInfo(event, this);
-			//bind hide
+			//alert('hailh');
 		});
 
 		//external box
@@ -781,10 +841,13 @@ Ganttalendar.prototype.shrinkBoundaries = function () {
 Ganttalendar.prototype.setBestFittingZoom = function () {
   //console.debug("setBestFittingZoom");
 
+  //hailh
+  /*
   if (this.getStoredZoomLevel()) {
     this.zoom = this.getStoredZoomLevel();
     return;
   }
+  */
 
 
   //if zoom is not defined get the best fitting one
