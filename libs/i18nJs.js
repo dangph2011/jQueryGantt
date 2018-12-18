@@ -109,7 +109,9 @@ Date.dayAbbreviations = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 Date.preferAmericanFormat = false;
 
 Date.firstDayOfWeek =0;
-Date.defaultFormat = "M/d/yyyy";
+//hailh
+//Date.defaultFormat = "M/d/yyyy";
+Date.defaultFormat = "d/M/yyyy";
 Date.masks = {
   fullDate:       "EEEE, MMMM d, yyyy",
   shortTime:      "h:mm a"
@@ -128,7 +130,8 @@ var workingDaysPerWeek =5;
 
 function isHoliday(date) {
   var friIsHoly =false;
-  var satIsHoly =true;
+  //var satIsHoly =true; //haile
+  var satIsHoly = false;
   var sunIsHoly =true;
 
   var pad = function (val) {
