@@ -22,6 +22,8 @@
  */
 function GanttMaster() {
   this.tasks = [];
+  this.tasksStored = [];
+  this.filterMode = false;
   this.deletedTaskIds = [];
   this.links = [];
 
@@ -1732,3 +1734,71 @@ GanttMaster.prototype.setHoursOn = function(startWorkingHour,endWorkingHour,date
   Date.workingPeriodResolution=resolution;
   millisInWorkingDay=endWorkingHour-startWorkingHour;
 };
+
+GanttMaster.prototype.filter = function(assignee, status) {
+  if (!this.filterMode) {
+    this.tasksStored = this.tasks;
+    this.filterMode = true;
+    this.setFilterMode(this.filterMode);
+  }
+  var tasksFilter = [];
+
+  for (var i = 0; i < this.tasksStored.length; i++) {
+    var t = this.tasksStored[i];
+    if (t.status == status || (t.assigs[0] != null &&  t.assigs[0].resourceId == assignee)) {
+      t.canWrite = false;
+      t.canAdd = false;
+      t.canDelete = false;
+      t.canAddIssue = false;
+      tasksFilter.push(t);
+    }
+  }
+
+  console.log("tsk filter: ", tasksFilter);
+
+  this.loadTasks(tasksFilter, 1);
+  this.redraw();
+  // return tasksFilter;
+}
+
+GanttMaster.prototype.setFilterMode = function(flag) {
+  if (flag) {
+    this.permissions = {
+    canWriteOnParent: false,
+    canWrite: false,
+    canAdd: false,
+    canDelete: false,
+    canInOutdent: false,
+    canMoveUpDown: false,
+    canSeePopEdit: false,
+    canSeeFullEdit: false,
+    canSeeDep: false,
+    canSeeCriticalPath: false,
+    canAddIssue: false,
+    cannotCloseTaskIfIssueOpen: false
+    };
+  } else {
+    this.permissions = {
+      canWriteOnParent: true,
+      canWrite: true,
+      canAdd: true,
+      canDelete: true,
+      canInOutdent: true,
+      canMoveUpDown: true,
+      canSeePopEdit: true,
+      canSeeFullEdit: true,
+      canSeeDep: true,
+      canSeeCriticalPath: true,
+      canAddIssue: false,
+      cannotCloseTaskIfIssueOpen: false
+    };
+  }
+}
+
+GanttMaster.prototype.clearFilter = function() {
+  this.filterMode = false;
+  this.setFilterMode(this.filterMode);
+  this.loadTasks(this.tasksStored);
+  this.redraw();
+  // return this.tasksStored;
+}

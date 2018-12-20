@@ -934,6 +934,14 @@
       }
     }
 
+    function filter() {
+      ge.filter(5,"ABC");
+    }
+
+    function clearFilter() {
+      ge.clearFilter();
+    }
+
     //-------------------------------------------  Open a black popup for managing resources. This is only an axample of implementation (usually resources come from server) ------------------------------------------------------
     function editResources() {
 
@@ -1168,6 +1176,8 @@
       <button onclick="ge.element.toggleClass('colorByStatus' );return false;" class="button textual icon"><span class="teamworkIcon">&sect;</span></button>
 
     <button onclick="editResources();" class="button textual requireWrite" title="edit resources"><span class="teamworkIcon">M</span></button>
+    <button onclick="filter();" class="button textual requireWrite" title="edit resources"><span class="teamworkIcon">A</span></button>
+    <button onclick="clearFilter();" class="button textual requireWrite" title="edit resources"><span class="teamworkIcon">B</span></button>
       &nbsp; &nbsp; &nbsp; &nbsp;
     <button onclick="saveGanttOnServer();" class="button first big requireWrite" title="Save">Lưu lại</button>
     <button onclick='newProject();' class='button requireWrite newproject'><em>clear project</em></button>
