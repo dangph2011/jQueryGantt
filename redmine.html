@@ -468,7 +468,7 @@
                     issue.issue.start_date = (new Date(task.start)).format("yyyy-MM-dd");
                 }
 
-                if (task.hasOwnProperty("parent_id")) {
+                if (task.hasOwnProperty("parent_id") && task.level > 1) {
                     issue.issue.parent_issue_id = task.parent_id;
                 }
 
