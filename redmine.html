@@ -175,6 +175,7 @@
                         task.start = (new Date(issue.start_date)).getTime();
                         task.end = (new Date(issue.due_date).getTime());
                         task.duration = recomputeDuration(task.start, task.end);
+                        task.hasChild = false;
 
                         //reflect assignees
                         //one task - one user - many role
@@ -222,6 +223,7 @@
                         var [check, level] = checkParent(project, task);
                         if (check < project.tasks.length) {
                             task.level = level + 1;
+                            project.tasks[check].hasChild = true;
                             project.tasks.splice(check + 1, 0, task);
                         } else {
                             childQueue.push(task);
