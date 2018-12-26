@@ -594,12 +594,11 @@ GanttMaster.prototype.changeTaskDates = function (task, start, end) {
   //console.debug("changeTaskDates",task, start, end)
   //hailh
   var oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds 
-  var diffDays = Math.round(Math.abs((end.getTime() - start.getTime())/(oneDay)));
+  var diffDays = Math.round(Math.abs((end - start)/(oneDay)));
   for(var i=1;i<=diffDays;i++){
-    
     var date = new Date(start.valueOf());
-      date.setDate(start.getDate() + i);
-    task.setPeriod(start, date);
+    date.setDate(date.getDate() + i);
+    task.setPeriod(start, date.getTime());
   }   
   //return task.setPeriod(start, end);
 
