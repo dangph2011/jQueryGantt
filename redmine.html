@@ -115,14 +115,16 @@
             // ge.checkpoint(); //empty the undo stack
 
             //hardcode server and project identifier
+            var projectPath = server + "/projects/" + projectIdentifier + ".json?callback=?";
+
             var membershipPath = server + "/projects/" + projectIdentifier + "/memberships.json?callback=?";
 
             var issuePath = server + "/issues.json?status_id=*&project_id=" + projectIdentifier +
                 "&include=relations&sort=start_date&callback=?";
             var rolePath = server + "/roles.json?callback=?";
-
-            $.when($.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath))
-                .then(function (memberships, issues, roles) {
+            
+            $.when($.getJSON(projectPath), $.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath))
+                .then(function (projectRm, memberships, issues, roles) {
 
                     var project = {};
 
@@ -153,10 +155,11 @@
                             "name": "Người theo dõi"
                         }
                     ];
-
+                    
                     //reflect task/issue
                     project.tasks = [];
-
+                    var superiorTask = {"id": "tmp_1", "name": projectRm[0].project.name, "level":0};
+                    project.tasks.push(superiorTask);
                     //store all child issue
                     var childQueue = [];
                     // travel all issue 
@@ -169,7 +172,7 @@
                         task.name = issue.subject;
                         task.progress = issue.done_ratio;
                         task.description = issue.description;
-                        task.level = 0; //TODO: examine task.level
+                        task.level = 1; //TODO: examine task.level
                         task.status = issue.status.name;
                         task.canWrite = true;
                         task.start = (new Date(issue.start_date)).getTime();
@@ -445,7 +448,7 @@
             //up to date Task
             var prj = ge.saveProject();
 
-            for (var i = 0; i < prj.tasks.length; i++) {
+            for (var i = 1; i < prj.tasks.length; i++) {
                 var task = prj.tasks[i];
                 var issue = {};
                 issue.issue = {};
