@@ -130,21 +130,29 @@
                     project.resources = [];
                     console.log("mbs: ", memberships);
                     //map user to rolesg
-                    var userToRole = {};
+                    // var userToRole = {};
                     for (var i = 0; i < memberships[0].memberships.length; i++) {
                         if (memberships[0].memberships[i].hasOwnProperty("user")) {
                             project.resources.push(memberships[0].memberships[i].user);
-                            userToRole[memberships[0].memberships[i].user.id] = memberships[0].memberships[
-                                i].roles;
+                            // userToRole[memberships[0].memberships[i].user.id] = memberships[0].memberships[i].roles;
                         } else if (memberships[0].memberships[i].hasOwnProperty("group")) {
                             project.resources.push(memberships[0].memberships[i].group);
-                            userToRole[memberships[0].memberships[i].group.id] = memberships[0].memberships[
-                                i].roles;
+                            // userToRole[memberships[0].memberships[i].group.id] = memberships[0].memberships[i].roles;
                         }
                     }
 
                     //reflect role
-                    project.roles = roles[0].roles;
+                    // project.roles = roles[0].roles;
+
+                    project.roles = [{
+                            "id": "1",
+                            "name": "Người thực hiện"
+                        },
+                        {
+                            "id": "2",
+                            "name": "Người theo dõi"
+                        }
+                    ];
 
                     //reflect task/issue
                     project.tasks = [];
@@ -172,13 +180,13 @@
                         //one task - one user - many role
                         task.assigs = [];
                         if (issue.hasOwnProperty("assigned_to")) {
-                            for (var j = 0; j < userToRole[issue.assigned_to.id].length; j++) {
-                                var assig = {};
-                                assig.id = "tmp_" + new Date().getTime() + "_" + i + j;
-                                assig.resourceId = issue.assigned_to.id;
-                                assig.roleId = userToRole[issue.assigned_to.id][j].id;
-                                task.assigs.push(assig);
-                            }
+                            // for (var j = 0; j < userToRole[issue.assigned_to.id].length; j++) {
+                            var assig = {};
+                            assig.id = "tmp_" + new Date().getTime() + "_" + i + j;
+                            assig.resourceId = issue.assigned_to.id;
+                            assig.roleId = 1;
+                            task.assigs.push(assig);
+                            // }
                         }
 
                         // handle FS
@@ -1477,7 +1485,7 @@
                     <th style="width:30px;">est.wklg.</th>
                     <th style="width:30px;" id="addAssig"><span class="teamworkIcon" style="cursor: pointer">+</span></th>
                 </tr>
-            </table>    
+            </table>
         </div>
 
 
