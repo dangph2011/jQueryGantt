@@ -627,6 +627,7 @@ GridEditor.prototype.openFullEditor = function (task, editOnlyAssig) {
   //hide task data if editing assig only
   if (editOnlyAssig) {
     taskEditor.find(".taskData").hide();
+    taskEditor.find(".taskCustomField").hide();
     taskEditor.find(".assigsTableWrapper").height(455);
     taskEditor.prepend("<h1>\""+task.name+"\"</h1>");
   }
