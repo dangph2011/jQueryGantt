@@ -680,6 +680,16 @@ GridEditor.prototype.openFullEditor = function (task, editOnlyAssig) {
     assigsTable.append(assigRow);
   }
 
+  //make custom field table
+  var customFieldTable = taskEditor.find("#customFieldTable");
+  customFieldTable.find("[ctfId]").remove();
+  //loop on custom fields
+  for (var i = 0; i < task.customFields.length; i++) {
+    var ctf = task.customFields[i];
+    var ctfRow = $.JST.createFromTemplate({task: task, ctf: ctf}, "CUSTOM_FIELD_ROW");
+    customFieldTable.append(ctfRow);
+  }
+
   taskEditor.find(":input").updateOldValue();
 
   if (!(self.master.permissions.canWrite || task.canWrite)) {

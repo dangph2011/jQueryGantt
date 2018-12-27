@@ -26,6 +26,7 @@
     <script src="libs/i18nJs.js"></script>
     <script src="libs/jquery/dateField/jquery.dateField.js"></script>
     <script src="libs/jquery/JST/jquery.JST.js"></script>
+    <!-- <script src="libs/watch.js"></script> -->
 
     <script type="text/javascript" src="libs/jquery/svg/jquery.svg.min.js"></script>
     <script type="text/javascript" src="libs/jquery/svg/jquery.svgdom.1.8.js"></script>
@@ -88,7 +89,7 @@
 
         var proxy = 'https://cors-anywhere.herokuapp.com/';
         var server = "http://159.65.9.28/redmine";
-        var projectIdentifier = 1;
+        var projectIdentifier = 5;
         var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
 
         $(function () {
@@ -122,7 +123,7 @@
             var issuePath = server + "/issues.json?status_id=*&project_id=" + projectIdentifier +
                 "&include=relations&sort=start_date&callback=?";
             var rolePath = server + "/roles.json?callback=?";
-            
+
             $.when($.getJSON(projectPath), $.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath))
                 .then(function (projectRm, memberships, issues, roles) {
 
@@ -155,10 +156,14 @@
                             "name": "Người theo dõi"
                         }
                     ];
-                    
+
                     //reflect task/issue
                     project.tasks = [];
-                    var superiorTask = {"id": "tmp_1", "name": projectRm[0].project.name, "level":0};
+                    var superiorTask = {
+                        "id": "tmp_1",
+                        "name": projectRm[0].project.name,
+                        "level": 0
+                    };
                     project.tasks.push(superiorTask);
                     //store all child issue
                     var childQueue = [];
@@ -191,6 +196,12 @@
                             assig.roleId = 1;
                             task.assigs.push(assig);
                             // }
+                        }
+
+                        //relfect custom field
+                        task.customFields = [];
+                        if (issue.hasOwnProperty("custom_fields")) {
+                            task.customFields = issue.custom_fields;
                         }
 
                         // handle FS
@@ -249,6 +260,7 @@
                         $(".ganttButtonBar button.requireWrite").attr("disabled", "true");
                     ge.loadProject(project);
                     ge.checkpoint(); //empty the undo stack
+                    // ge.resetWatcher();
 
                 }).fail(function (problem) {
                     // handle errors (some request has failed)
@@ -447,6 +459,8 @@
 
             //up to date Task
             var prj = ge.saveProject();
+
+            console.log(" project: ", prj);
 
             for (var i = 1; i < prj.tasks.length; i++) {
                 var task = prj.tasks[i];
@@ -1267,6 +1281,15 @@
     </tr>
   </table>
 
+
+    <h2>Custom Field</h2>
+    <table cellspacing="1" cellpadding="0" width="100%" id="customFieldTable">
+        <tr>
+            <th style="width:30px;">name</th>
+            <th style="width:100px;">value</th>
+        </tr>
+    </table>
+
   <div style="text-align: right; padding-top: 20px">
     <span id="saveButton" class="button first" onClick="$(this).trigger('saveFullEditor.gantt');">Save</span>
   </div>
@@ -1305,6 +1328,29 @@
     <div style="text-align: right; padding-top: 20px"><button id="resSaveButton" class="button big">Save</button></div>
   </div>
   -->
+        </div>
+
+        <div class="__template__" type="CUSTOM_FIELD_EDITOR">
+            <!-- 
+            <div class="customFieldEditor" style="padding: 5px;">   
+                <h2>Custom Field</h2>
+                <table cellspacing="1" cellpadding="0" width="100%" id="customFieldTable">
+                    <tr>
+                        <th style="width:100px;">name</th>
+                        <th style="width:30px;>value</span></th>
+                    </tr>
+                </table>
+            </div>
+            -->
+        </div>
+
+        <div class="__template__" type="CUSTOM_FIELD_ROW">
+            <!--
+            <tr taskId="(#=obj.task.id#)" ctfId="(#=obj.ctf.id#)" class="ctfEditRow" >
+                <td><label for="(#=obj.ctf.name#)">(#=obj.ctf.name#)</label></td>
+                <td><input type="text" name="value" value="(#=obj.ctf.value#)" style="width:100%;" class="formElements"></td>
+            </tr>
+            -->
         </div>
 
         <div class="__template__" type="TASK_FILTER">

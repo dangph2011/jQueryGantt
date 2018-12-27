@@ -73,8 +73,19 @@ function Task(id, name, code, level, start, end, duration, collapsed) {
   this.ganttElement; //gantt html element
   this.master;
 
+  this.change = false;
 
   this.assigs = [];
+  this.customFields = [];
+
+  // watch(this, ["id", "name", "description", "status", "start", "end", "level"], function(){
+  //   console.log("watch: ",  this.getString() + Date.now());
+  //   this.change = true;
+  // });
+}
+
+Task.prototype.getString = function () {
+  return [this.id, this.name, this.description, this.status, this.level, this.start, this.end].join(",");
 }
 
 Task.prototype.clone = function () {
