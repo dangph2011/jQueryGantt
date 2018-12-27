@@ -102,9 +102,14 @@ Task.prototype.getAssigsString = function () {
   var ret = "";
   for (var i = 0; i < this.assigs.length; i++) {
     var ass = this.assigs[i];
-    if(ass.role=="Người thực hiện"){
-		ret = ret + ass.resource+" ";
-	}
+    // var res = this.master.getResource(ass.resourceId);
+    // if(ass.role=="Người thực hiện"){
+    // ret = ret + ass.resource+" ";
+    var res = this.master.getResource(ass.resourceId);
+    if (res) {
+      ret = ret + (ret == "" ? "" : ", ") + res.name;
+    }
+	// }
 	/*	
 	var res = this.master.getResource(ass.resourceId);
     if (res) {
