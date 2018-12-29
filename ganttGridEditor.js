@@ -592,14 +592,20 @@ GridEditor.prototype.bindRowInputEvents = function (task, taskRow) {
     var taskId = tr.attr("taskid");
     var task = self.master.getTask(taskId);
 
-    var changer = $.JST.createFromTemplate({}, "CHANGE_STATUS");
+    var changer = taskRow.find
+
+    var changer = $.JST.createFromTemplate(task, "CHANGE_STATUS");
+
+
     changer.find("[status=" + task.status + "]").addClass("selected");
     changer.find(".taskStatus").click(function (e) {
       e.stopPropagation();
       var newStatus = $(this).attr("status");
       changer.remove();
       self.master.beginTransaction();
-      task.changeStatus(newStatus);
+      //remove status constraints dangph
+      // task.changeStatus(newStatus);
+      task.status = newStatus;
       self.master.endTransaction();
       el.attr("status", task.status);
     });
@@ -783,9 +789,8 @@ GridEditor.prototype.openFullEditor = function (task, editOnlyAssig) {
       task.setPeriod(Date.parseString(taskEditor.find("#start").val()).getTime(), Date.parseString(taskEditor.find("#end").val()).getTime() + (3600000 * 22));
 
       //change status
+       //remove status constraints dangph 
       // task.changeStatus(taskEditor.find("#status").val());
-      
-      //donot check status relevance
       task.status = taskEditor.find("#status").val();
 
 

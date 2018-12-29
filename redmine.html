@@ -1208,25 +1208,15 @@
   </div>
   -->
         </div>
-
-
+        
         <div class="__template__" type="CHANGE_STATUS">
-            <!--
-    <div class="taskStatusBox">
-    <div class="taskStatus cvcColorSquare" status="STATUS_ACTIVE" title="Active"></div>
-    <div class="taskStatus cvcColorSquare" status="STATUS_DONE" title="Completed"></div>
-    <div class="taskStatus cvcColorSquare" status="STATUS_FAILED" title="Failed"></div>
-    <div class="taskStatus cvcColorSquare" status="STATUS_SUSPENDED" title="Suspended"></div>
-    <div class="taskStatus cvcColorSquare" status="STATUS_WAITING" title="Waiting" style="display: none;"></div>
-    <div class="taskStatus cvcColorSquare" status="STATUS_UNDEFINED" title="Undefined"></div>
-    </div>
-  -->
+                <!--
+        <div class="taskStatusBox">
         </div>
+      -->
+            </div>
 
-
-
-
-        <div class="__template__" type="TASK_EDITOR">
+  <div class="__template__" type="TASK_EDITOR">
             <!--
   <div class="ganttTaskEditor">
     <h2 class="taskData">Task editor</h2>
@@ -1408,6 +1398,21 @@
                 if (task.task.status == res.id)
                     opt.attr("selected", "true");
                     statusSelected.append(opt);
+            }
+        });
+
+        $.JST.loadDecorator("CHANGE_STATUS", function (statusChanged, task) {
+            // var resEl = statusTr.find("[name=statusId]");
+            // var div = $("<div>");
+            // div.attr("class", "taskStatusBox");
+            // statusChanged.append(div);
+            for (var i = 0; i < task.master.status.length; i++) {
+                var res = task.master.status[i];
+                div = $("<div>");
+                div.attr("class", "taskStatus cvcColorSquare");
+                div.attr("status", res.id);
+                div.attr("title", res.name);
+                statusChanged.append(div);
             }
         });
 
