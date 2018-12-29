@@ -1307,7 +1307,7 @@
 
         <div class="__template__" type="SELECTED_STATUS">
             <!--
-            <select id="status" name="status"  class="formElements"></select>
+            <select id="status" name="status"  class="taskStatus" status="(#=obj.task.status#)" onchange="$(this).attr('STATUS',$(this).val());"></select>
             -->
         </div>
 
@@ -1399,12 +1399,12 @@
 
         $.JST.loadDecorator("SELECTED_STATUS", function (statusSelected, task) {
             // var resEl = statusTr.find("[name=statusId]");
-            var opt = $("<option>");
-            statusSelected.append(opt);
             for (var i = 0; i < task.task.master.status.length; i++) {
                 var res = task.task.master.status[i];
                 opt = $("<option>");
                 opt.val(res.id).html(res.name);
+                opt.attr("class", "taskStatus");
+                opt.attr("status", res.id);
                 if (task.task.status == res.id)
                     opt.attr("selected", "true");
                     statusSelected.append(opt);

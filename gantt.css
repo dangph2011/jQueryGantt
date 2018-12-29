@@ -465,27 +465,27 @@ input[readonly]{
   border:0;
   cursor: pointer;
 }
-.taskStatus[status=STATUS_ACTIVE]{
+.taskStatus[status="1"]{
   background-color: #3BBF67;
   color: #fff;
 }
-.taskStatus[status=STATUS_DONE]{
+.taskStatus[status="2"]{
   background-color: #6EBEF4;
   color:#000;
 }
-.taskStatus[status=STATUS_FAILED]{
+.taskStatus[status="3"]{
   background-color: #763A96;
   color: #fff;
 }
-.taskStatus[status=STATUS_SUSPENDED]{
+.taskStatus[status="4"]{
   background-color: #F9C154;
   color:#000;
 }
-.taskStatus[status=STATUS_WAITING]{
-  background-color:rgb(247, 145, 54);
+.taskStatus[status="5"]{
+  background-color:rgb(177, 139, 105);
   color:#000;
 }
-.taskStatus[status=STATUS_UNDEFINED]{
+.taskStatus[status="6"]{
   background-color: #dededf;
   color:#000;
 }
