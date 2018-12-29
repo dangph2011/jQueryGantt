@@ -26,6 +26,7 @@ function GanttMaster() {
   this.filterMode = false;
   this.deletedTaskIds = [];
   this.links = [];
+  this.status = [];
 
   this.editor; //element for editor
   this.gantt; //element for gantt
@@ -441,6 +442,7 @@ GanttMaster.prototype.loadProject = function (project) {
   this.serverClientTimeOffset = typeof project.serverTimeOffset !="undefined"? (parseInt(project.serverTimeOffset) + new Date().getTimezoneOffset() * 60000) : 0;
   this.resources = project.resources;
   this.roles = project.roles;
+  this.status = project.status;
 
   //permissions from loaded project
   this.permissions.canWrite = project.canWrite;

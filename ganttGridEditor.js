@@ -222,6 +222,7 @@ GridEditor.prototype.reset = function () {
 
 GridEditor.prototype.bindRowEvents = function (task, taskRow) {
   var self = this;
+  
   //console.debug("bindRowEvents",this,this.master,this.master.permissions.canWrite, task.canWrite);
 
   //bind row selection
@@ -680,6 +681,11 @@ GridEditor.prototype.openFullEditor = function (task, editOnlyAssig) {
     var assigRow = $.JST.createFromTemplate({task: task, assig: assig}, "ASSIGNMENT_ROW");
     assigsTable.append(assigRow);
   }
+
+  ////make status field
+  var taskStatusEditor = taskEditor.find("#taskSelectedStatus");
+  var taskSelectedStatus = $.JST.createFromTemplate({task: task}, "SELECTED_STATUS");
+  taskStatusEditor.append(taskSelectedStatus);
 
   //make custom field table
   var customFieldTable = taskEditor.find("#customFieldTable");

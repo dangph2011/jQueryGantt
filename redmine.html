@@ -88,7 +88,7 @@
 
         var proxy = 'https://cors-anywhere.herokuapp.com/';
         var server = "http://159.65.9.28/redmine";
-        var projectIdentifier = 1;
+        var projectIdentifier = 5;
         var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
 
         $(function () {
@@ -123,13 +123,16 @@
                 "&include=relations&sort=start_date&callback=?";
             var rolePath = server + "/roles.json?callback=?";
 
-            $.when($.getJSON(projectPath), $.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath))
-                .then(function (projectRm, memberships, issues, roles) {
+            var issueStatusPath = server + "/issue_statuses.json?callback=?";
+
+            $.when($.getJSON(projectPath), $.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath), $.getJSON(issueStatusPath))
+                .then(function (projectRm, memberships, issues, roles, issueStatus) {
 
                     var project = {};
 
                     //reflect membership/user/resources
                     project.resources = [];
+                    // project.resources.push({"name": "me"});
                     console.log("mbs: ", memberships);
                     //map user to rolesg
                     // var userToRole = {};
@@ -143,9 +146,11 @@
                         }
                     }
 
+                    //reflect status
+                    project.status = issueStatus[0].issue_statuses;
+
                     //reflect role
                     // project.roles = roles[0].roles;
-
                     project.roles = [{
                             "id": "1",
                             "name": "Người thực hiện"
@@ -177,7 +182,7 @@
                         task.progress = issue.done_ratio;
                         task.description = issue.description;
                         task.level = 1; //TODO: examine task.level
-                        task.status = issue.status.name;
+                        task.status = issue.status.id;
                         task.canWrite = true;
                         task.start = (new Date(issue.start_date)).getTime();
                         task.end = (new Date(issue.due_date).getTime());
@@ -253,6 +258,7 @@
                     project.canAdd = true;
 
                     console.log("Task: ", project);
+                    // return;
                     // var project = getDemoProject();
 
                     if (!project.canWrite)
@@ -488,6 +494,8 @@
                     issue.issue.due_date = (new Date(task.end)).format("yyyy-MM-dd");
                 }
 
+
+
                 // var issueCreated = issue.issue.id.includes("tmp");
                 // var issueCreated = isNaN(issue.issue.id);
 
@@ -499,6 +507,15 @@
                         issue.issue.assigned_to_id = parseInt(task.assigs[0].resourceId, 10);
                     }
                 }
+
+                // if (task.hasOwnProperty("customFields")) {
+                //     issue.issue.custom_fields = task.customFields;
+                // }
+
+
+
+                // console.log("issue: ", issue);
+                // continue;
 
                 if (isNaN(issue.issue.id)) {
                     issue.project_id = projectIdentifier;
@@ -1211,7 +1228,7 @@
             <!--
   <div class="ganttTaskEditor">
     <h2 class="taskData">Task editor</h2>
-    <table  cellspacing="1" cellpadding="5" width="100%" class="taskData table" border="0">
+    <table  cellspacing="1" cellpadding="5" width="100%" class="taskData table" id="taskData" border="0">
           <tr>
         <td width="200" style="height: 80px"  valign="top">
           <label for="code">code/short name</label><br>
@@ -1242,16 +1259,8 @@
       </tr>
 
       <tr>
-        <td  colspan="2">
-          <label for="status" class=" ">status</label><br>
-          <select id="status" name="status" class="taskStatus" status="(#=obj.status#)"  onchange="$(this).attr('STATUS',$(this).val());">
-            <option value="STATUS_ACTIVE" class="taskStatus" status="STATUS_ACTIVE" >active</option>
-            <option value="STATUS_WAITING" class="taskStatus" status="STATUS_WAITING" >suspended</option>
-            <option value="STATUS_SUSPENDED" class="taskStatus" status="STATUS_SUSPENDED" >suspended</option>
-            <option value="STATUS_DONE" class="taskStatus" status="STATUS_DONE" >completed</option>
-            <option value="STATUS_FAILED" class="taskStatus" status="STATUS_FAILED" >failed</option>
-            <option value="STATUS_UNDEFINED" class="taskStatus" status="STATUS_UNDEFINED" >undefined</option>
-          </select>
+        <td colspan="2" id="taskSelectedStatus">
+            <label for="status" class=" ">status</label><br>
         </td>
 
         <td valign="top" nowrap>
@@ -1293,6 +1302,12 @@
   -->
         </div>
 
+
+        <div class="__template__" type="SELECTED_STATUS">
+            <!--
+            <select name="statusId"  class="formElements"></select>
+            -->
+        </div>
 
 
         <div class="__template__" type="ASSIGNMENT_ROW">
@@ -1378,6 +1393,20 @@
             resTr.find(".delRes").click(function () {
                 $(this).closest("tr").remove()
             });
+        });
+
+        $.JST.loadDecorator("SELECTED_STATUS", function (statusSelected, task) {
+            // var resEl = statusTr.find("[name=statusId]");
+            var opt = $("<option>");
+            statusSelected.append(opt);
+            for (var i = 0; i < task.task.master.status.length; i++) {
+                var res = task.task.master.status[i];
+                opt = $("<option>");
+                opt.val(res.id).html(res.name);
+                if (task.task.status == res.id)
+                    opt.attr("selected", "true");
+                    statusSelected.append(opt);
+            }
         });
 
         $.JST.loadDecorator("ASSIGNMENT_ROW", function (assigTr, taskAssig) {
