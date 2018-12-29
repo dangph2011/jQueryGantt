@@ -494,7 +494,9 @@
                     issue.issue.due_date = (new Date(task.end)).format("yyyy-MM-dd");
                 }
 
-
+                if (task.hasOwnProperty("status")) {
+                    issue.issue.status_id = task.status;
+                }
 
                 // var issueCreated = issue.issue.id.includes("tmp");
                 // var issueCreated = isNaN(issue.issue.id);
@@ -1305,7 +1307,7 @@
 
         <div class="__template__" type="SELECTED_STATUS">
             <!--
-            <select name="statusId"  class="formElements"></select>
+            <select id="status" name="status"  class="formElements"></select>
             -->
         </div>
 

@@ -783,7 +783,11 @@ GridEditor.prototype.openFullEditor = function (task, editOnlyAssig) {
       task.setPeriod(Date.parseString(taskEditor.find("#start").val()).getTime(), Date.parseString(taskEditor.find("#end").val()).getTime() + (3600000 * 22));
 
       //change status
-      task.changeStatus(taskEditor.find("#status").val());
+      // task.changeStatus(taskEditor.find("#status").val());
+      
+      //donot check status relevance
+      task.status = taskEditor.find("#status").val();
+
 
       if (self.master.endTransaction()) {
         taskEditor.find(":input").updateOldValue();
