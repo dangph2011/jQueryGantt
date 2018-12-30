@@ -520,7 +520,7 @@
                 // continue;
 
                 if (isNaN(issue.issue.id)) {
-                    issue.project_id = projectIdentifier;
+                    issue.issue.project_id = projectIdentifier;
                     createIssue(server, key, issue);
                     if (task.hasOwnProperty("depends") && task.depends != "") {
                         createRelate(server, key, task);

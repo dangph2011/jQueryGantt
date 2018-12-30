@@ -50,7 +50,8 @@ function Task(id, name, code, level, start, end, duration, collapsed) {
   this.description = "";
   this.code = code;
   this.level = level;
-  this.status = "STATUS_UNDEFINED";
+  //create new task with new status
+  this.status = 1;
   this.depends = "";
 
   this.start = start;
