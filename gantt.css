@@ -482,7 +482,7 @@ input[readonly]{
   color:#000;
 }
 .taskStatus[status="5"]{
-  background-color:rgb(177, 139, 105);
+  background-color: #B18B69;
   color:#000;
 }
 .taskStatus[status="6"]{
@@ -597,29 +597,29 @@ select.taskStatus{
   stroke-dasharray:2,2;
 }
 
-.colorByStatus .taskStatusSVG[status=STATUS_ACTIVE]{
+.colorByStatus .taskStatusSVG[status="1"]{
   fill: #3BBF67;
 }
-.colorByStatus .taskStatusSVG[status=STATUS_DONE]{
+.colorByStatus .taskStatusSVG[status="2"]{
   fill: #6EBEF4;
 }
-.colorByStatus .taskStatusSVG[status=STATUS_FAILED]{
+.colorByStatus .taskStatusSVG[status="3"]{
   fill: #763A96;
 }
-.colorByStatus .taskStatusSVG[status=STATUS_SUSPENDED]{
+.colorByStatus .taskStatusSVG[status="4"]{
   fill: #f9c154;
 }
-.colorByStatus .taskStatusSVG[status=STATUS_UNDEFINED]{
-  fill: #dededf;
+.colorByStatus .taskStatusSVG[status="5"]{
+  fill: #B18B69;
 }
-.colorByStatus .taskStatusSVG[status=STATUS_UNDEFINED] .taskLayout{
+.colorByStatus .taskStatusSVG[status="6"] .taskLayout{
   stroke: #ccc;
   stroke-width:1;
 }
 
-.colorByStatus .taskStatusSVG[status=STATUS_DONE] .textPerc,
-.colorByStatus .taskStatusSVG[status=STATUS_ACTIVE] .textPerc,
-.colorByStatus .taskStatusSVG[status=STATUS_FAILED] .textPerc{
+.colorByStatus .taskStatusSVG[status="1"] .textPerc,
+.colorByStatus .taskStatusSVG[status="2"] .textPerc,
+.colorByStatus .taskStatusSVG[status="3"] .textPerc{
   fill: #fff;
 }
 

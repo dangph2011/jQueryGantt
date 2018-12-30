@@ -462,7 +462,7 @@ Ganttalendar.prototype.drawTask = function (task) {
 			height: (self.master.showBaselines ? self.taskHeight / 1.3 : self.taskHeight)
 		};
 	//hailh
-    var taskSvg = svg.svg(self.tasksGroup, dimensions.x, dimensions.y, dimensions.width, dimensions.height, {class:"taskBox taskBoxSVG taskStatusSVG", title:"<strong color=000>olala</strong>", id:task.id, status:task.status, taskid:task.id,fill:task.color||"yellow" });
+    var taskSvg = svg.svg(self.tasksGroup, dimensions.x, dimensions.y, dimensions.width, dimensions.height, {class:"taskBox taskBoxSVG taskStatusSVG", title:"<strong color=000>olala</strong>", id:task.id, status:task.status, taskid:task.id,fill:task.color||"#eee" });
 
     //svg.title(taskSvg, task.name);
     //external box
@@ -485,7 +485,7 @@ Ganttalendar.prototype.drawTask = function (task) {
     }
     //hailh
 		if (task.isParent())
-      svg.rect(taskSvg, 0, 0, "100%", 3, {fill:"yellow"});
+      svg.rect(taskSvg, 0, 0, "100%", 3, {fill:"#000"});
 
     if (task.startIsMilestone) {
       svg.image(taskSvg, -9, dimensions.height/2-9, 18, 18, self.master.resourceUrl +"milestone.png")
