@@ -347,11 +347,11 @@
                 dataType: 'text',
                 contentType: "application/json; charset=utf-8",
                 success: function (data) {
-                    console.log('SUCCESS Update issue id: ', issue.id);
+                    console.log('SUCCESS Update issue id: ', issue.issue.id);
                     createOrUpdateIssue(taskTree);
                 },
                 error: function (data) {
-                    console.log('ERROR Updateissue id: ', issue.id);
+                    console.log('ERROR Updateissue id: ', issue.issue.id);
                 },
             });
         }
@@ -643,6 +643,8 @@
 
                 if (task.hasOwnProperty("parent_id") && task.level > 1) {
                     issue.issue.parent_issue_id = task.parent_id;
+                } else {
+                    issue.issue.parent_issue_id = "";
                 }
 
                 if (task.hasOwnProperty("end")) {
