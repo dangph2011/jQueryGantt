@@ -73,7 +73,7 @@ GridEditor.prototype.fillEmptyLines = function () {
 	  var length = master.tasks.length;
 	  if (length>0) {		  
         start = master.tasks[length-1].start;
-        level = master.tasks[length-1].level;
+        level = master.tasks[length-1].level == 0 ? 1:master.tasks[length-1].level;
       }
 
       //fill all empty previouses
