@@ -462,35 +462,35 @@ GridEditor.prototype.bindRowInputEvents = function (task, taskRow) {
         var linkOK = self.master.updateLinks(task);
         if (linkOK) {
           //synchronize status from superiors states
-          var sups = task.getSuperiors();
+          // var sups = task.getSuperiors();
 
-          var oneFailed=false;
-          var oneUndefined=false;
-          var oneActive=false;
-          var oneSuspended=false;
-          var oneWaiting=false;
-          for (var i = 0; i < sups.length; i++) {
-            oneFailed=oneFailed|| sups[i].from.status=="STATUS_FAILED";
-            oneUndefined=oneUndefined|| sups[i].from.status=="STATUS_UNDEFINED";
-            oneActive=oneActive|| sups[i].from.status=="STATUS_ACTIVE";
-            oneSuspended=oneSuspended|| sups[i].from.status=="STATUS_SUSPENDED";
-            oneWaiting=oneWaiting|| sups[i].from.status=="STATUS_WAITING";
-          }
+          // var oneFailed=false;
+          // var oneUndefined=false;
+          // var oneActive=false;
+          // var oneSuspended=false;
+          // var oneWaiting=false;
+          // for (var i = 0; i < sups.length; i++) {
+          //   oneFailed=oneFailed|| sups[i].from.status=="STATUS_FAILED";
+          //   oneUndefined=oneUndefined|| sups[i].from.status=="STATUS_UNDEFINED";
+          //   oneActive=oneActive|| sups[i].from.status=="STATUS_ACTIVE";
+          //   oneSuspended=oneSuspended|| sups[i].from.status=="STATUS_SUSPENDED";
+          //   oneWaiting=oneWaiting|| sups[i].from.status=="STATUS_WAITING";
+          // }
 
-          if (oneFailed){
-            task.changeStatus("STATUS_FAILED")
-          } else if (oneUndefined){
-            task.changeStatus("STATUS_UNDEFINED")
-          } else if (oneActive){
-            //task.changeStatus("STATUS_SUSPENDED")
-            task.changeStatus("STATUS_WAITING")
-          } else  if (oneSuspended){
-            task.changeStatus("STATUS_SUSPENDED")
-          } else  if (oneWaiting){
-            task.changeStatus("STATUS_WAITING")
-          } else {
-            task.changeStatus("STATUS_ACTIVE")
-          }
+          // if (oneFailed){
+          //   task.changeStatus("STATUS_FAILED")
+          // } else if (oneUndefined){
+          //   task.changeStatus("STATUS_UNDEFINED")
+          // } else if (oneActive){
+          //   //task.changeStatus("STATUS_SUSPENDED")
+          //   task.changeStatus("STATUS_WAITING")
+          // } else  if (oneSuspended){
+          //   task.changeStatus("STATUS_SUSPENDED")
+          // } else  if (oneWaiting){
+          //   task.changeStatus("STATUS_WAITING")
+          // } else {
+          //   task.changeStatus("STATUS_ACTIVE")
+          // }
 
           self.master.changeTaskDeps(task); //dates recomputation from dependencies
         }
