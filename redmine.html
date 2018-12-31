@@ -191,6 +191,11 @@
                         task.end = (new Date(issue.due_date).getTime());
                         task.duration = recomputeDuration(task.start, task.end);
                         task.hasChild = false;
+                        task.relevance = 0;
+                        task.progressByWorklog = false;
+                        task.type = "";
+                        task.typeId = "";
+                        task.depends = "";
 
                         //reflect assignees
                         //one task - one user - many role
