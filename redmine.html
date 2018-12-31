@@ -88,7 +88,7 @@
 
         var proxy = 'https://cors-anywhere.herokuapp.com/';
         var server = "http://159.65.9.28/redmine";
-        var projectIdentifier = 5;
+        var projectIdentifier = 6;
         var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
 
         $(function () {
@@ -125,7 +125,8 @@
 
             var issueStatusPath = server + "/issue_statuses.json?callback=?";
 
-            $.when($.getJSON(projectPath), $.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath), $.getJSON(issueStatusPath))
+            $.when($.getJSON(projectPath), $.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath),
+                    $.getJSON(issueStatusPath))
                 .then(function (projectRm, memberships, issues, roles, issueStatus) {
 
                     var project = {};
@@ -166,7 +167,9 @@
                     var superiorTask = {
                         "id": "tmp_1",
                         "name": projectRm[0].project.name,
-                        "level": 0
+                        "level": 0,
+                        "start": (new Date()).getTime(),
+                        "end": (new Date()).getTime(),
                     };
                     project.tasks.push(superiorTask);
                     //store all child issue
@@ -312,7 +315,7 @@
             return ret;
         }
 
-        function createIssue(server, key, issue) {
+        function createIssue(server, key, issue, taskTree) {
             jQuery.ajax({
                 type: 'POST',
                 url: proxy + server + '/issues.json' + "?key=" + key,
@@ -320,15 +323,23 @@
                 dataType: 'text',
                 contentType: "application/json; charset=utf-8",
                 success: function (data) {
-                    console.log('SUCCESS: ', data);
+                    console.log('SUCCESS create issue: ', data);
+                    updateParentId(taskTree, (JSON.parse(data)).issue.id);
+                    createOrUpdateIssue(taskTree);
                 },
                 error: function (data) {
-                    console.log('ERROR: ', data);
+                    console.log('ERROR create issue: ', data);
                 },
             });
         }
 
-        function updateIssue(server, key, issue) {
+        function updateParentId(taskTree, newParentId) {
+            for (var i = 0; i < taskTree.children.length; i++) {
+                taskTree.children[i].parent_id = newParentId;
+            }
+        }
+
+        function updateIssue(server, key, issue, taskTree) {
             jQuery.ajax({
                 type: 'PUT',
                 url: proxy + server + '/issues/' + issue.issue.id + '.json' + "?key=" + key,
@@ -336,10 +347,11 @@
                 dataType: 'text',
                 contentType: "application/json; charset=utf-8",
                 success: function (data) {
-                    console.log('SUCCESS: ', data);
+                    console.log('SUCCESS Update issue id: ', issue.id);
+                    createOrUpdateIssue(taskTree);
                 },
                 error: function (data) {
-                    console.log('ERROR: ', data);
+                    console.log('ERROR Updateissue id: ', issue.id);
                 },
             });
         }
@@ -461,15 +473,158 @@
                 }
             }
 
+            console.log("descendant: ", ge.tasks[1].getDescendant());
             //up to date Task
             var prj = ge.saveProject();
 
-            console.log(" project: ", prj);
+            var taskTree = list_to_tree(prj.tasks);
+            console.log("taskTree : ", taskTree);
 
-            for (var i = 1; i < prj.tasks.length; i++) {
-                var task = prj.tasks[i];
+            // var res = saveOnServer(taskTree);
+            createOrUpdateIssue(taskTree[0]);
+
+            // for (var i = 1; i < prj.tasks.length; i++) {
+            //     var task = prj.tasks[i];
+            //     var issue = {};
+            //     issue.issue = {};
+            //     if (task.hasOwnProperty("id")) {
+            //         issue.issue.id = task.id;
+            //     }
+            //     if (task.hasOwnProperty("name")) {
+            //         issue.issue.subject = task.name;
+            //     }
+            //     if (task.hasOwnProperty("progress")) {
+            //         issue.issue.done_ratio = task.progress;
+            //     }
+            //     if (task.hasOwnProperty("description")) {
+            //         issue.issue.description = task.description;
+            //     }
+            //     if (task.hasOwnProperty("start")) {
+            //         issue.issue.start_date = (new Date(task.start)).format("yyyy-MM-dd");
+            //     }
+
+            //     if (task.hasOwnProperty("parent_id") && task.level > 1) {
+            //         issue.issue.parent_issue_id = task.parent_id;
+            //     }
+
+            //     if (task.hasOwnProperty("end")) {
+            //         issue.issue.due_date = (new Date(task.end)).format("yyyy-MM-dd");
+            //     }
+
+            //     if (task.hasOwnProperty("status")) {
+            //         issue.issue.status_id = task.status;
+            //     }
+
+            //     // var issueCreated = issue.issue.id.includes("tmp");
+            //     // var issueCreated = isNaN(issue.issue.id);
+
+            //     if (task.hasOwnProperty("assigs")) {
+            //         //issue - issue : 1 - 1.
+            //         //get only the first user
+            //         //assign only one user
+            //         if (task.assigs[0] != null) {
+            //             issue.issue.assigned_to_id = parseInt(task.assigs[0].resourceId, 10);
+            //         }
+            //     }
+
+            //     // if (task.hasOwnProperty("customFields")) {
+            //     //     issue.issue.custom_fields = task.customFields;
+            //     // }
+
+
+
+            //     // console.log("issue: ", issue);
+            //     // continue;
+
+            //     issue.issue.project_id = projectIdentifier;
+
+            //     if (isNaN(issue.issue.parent_issue_id)) {
+            //         taskChild.push(issue);
+            //         continue;
+            //     }
+
+            //     if (isNaN(issue.issue.id)) {
+            //         createIssue(server, key, issue);
+            //         if (task.hasOwnProperty("depends") && task.depends != "") {
+            //             createRelate(server, key, task);
+            //         }
+            //     } else {
+            //         updateIssue(server, key, issue);
+
+            //         //Recreate related issue
+            //         //delete all in issue relation
+            //         if (task.hasOwnProperty("depends") && task.depends != "") {
+            //             var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
+            //             var t = task;
+            //             $.getJSON(issueUrl, function (resp) {
+            //                 if (resp.issue.hasOwnProperty("relations")) {
+            //                     if (resp.issue.relations.length > 0) {
+            //                         for (var j = 0; j < resp.issue.relations.length; j++) {
+            //                             var relationId = resp.issue.relations[j].id;
+            //                             deleteAndCreateRelation(server, key, relationId, t);
+            //                         }
+            //                     }
+            //                 }
+            //                 // var res = task.depends.split(",");
+            //                 // for (var j = 0; j < res.length; j++) {
+            //                 //     var [parent_id, delay] = res[j].split(":");
+            //                 //     delay = (delay == undefined) ? 0 : delay;
+            //                 //     var relation = initRelation(task.id, PRECEDES, delay);
+            //                 //     createRelation(server, key, parent_id, relation);
+            //                 // }
+            //             });
+            //         } else {
+            //             var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
+            //             $.getJSON(issueUrl, function (resp) {
+            //                 if (resp.issue.hasOwnProperty("relations")) {
+            //                     if (resp.issue.relations.length > 0) {
+            //                         for (var j = 0; j < resp.issue.relations.length; j++) {
+            //                             var relationId = resp.issue.relations[j].id;
+            //                             deleteRelation(server, key, relationId);
+            //                         }
+            //                     }
+            //                 }
+            //             });
+            //         }
+            //     }
+            // }
+        }
+
+        function list_to_tree(list) {
+            var map = {},
+                node, roots = [],
+                i;
+            for (i = 0; i < list.length; i++) {
+                map[list[i].id] = i; // initialize the map
+                list[i].children = []; // initialize the children
+            }
+            for (i = 0; i < list.length; i++) {
+                node = list[i];
+                if (node.hasOwnProperty("parent_id") && node.parent_id !== "0") {
+                    list[map[node.parent_id]].children.push(node);
+                } else {
+                    roots.push(node);
+                }
+            }
+            return roots;
+        }
+
+        // function saveOnServer(taskTree){
+        //     for (var i = 0; i < );
+        // }
+
+        function createOrUpdateIssue(taskTree) {
+            if (taskTree.children.length < 1) {
+                return;
+            }
+
+            for (var i = 0; i < taskTree.children.length; i++) {
+                var task = taskTree.children[i];
                 var issue = {};
                 issue.issue = {};
+
+                issue.issue.project_id = projectIdentifier;
+
                 if (task.hasOwnProperty("id")) {
                     issue.issue.id = task.id;
                 }
@@ -498,9 +653,6 @@
                     issue.issue.status_id = task.status;
                 }
 
-                // var issueCreated = issue.issue.id.includes("tmp");
-                // var issueCreated = isNaN(issue.issue.id);
-
                 if (task.hasOwnProperty("assigs")) {
                     //issue - issue : 1 - 1.
                     //get only the first user
@@ -510,59 +662,10 @@
                     }
                 }
 
-                // if (task.hasOwnProperty("customFields")) {
-                //     issue.issue.custom_fields = task.customFields;
-                // }
-
-
-
-                // console.log("issue: ", issue);
-                // continue;
-
                 if (isNaN(issue.issue.id)) {
-                    issue.issue.project_id = projectIdentifier;
-                    createIssue(server, key, issue);
-                    if (task.hasOwnProperty("depends") && task.depends != "") {
-                        createRelate(server, key, task);
-                    }
+                    createIssue(server, key, issue, taskTree.children[i]);
                 } else {
-                    updateIssue(server, key, issue);
-
-                    //Recreate related issue
-                    //delete all in issue relation
-                    if (task.hasOwnProperty("depends") && task.depends != "") {
-                        var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
-                        var t = task;
-                        $.getJSON(issueUrl, function (resp) {
-                            if (resp.issue.hasOwnProperty("relations")) {
-                                if (resp.issue.relations.length > 0) {
-                                    for (var j = 0; j < resp.issue.relations.length; j++) {
-                                        var relationId = resp.issue.relations[j].id;
-                                        deleteAndCreateRelation(server, key, relationId, t);
-                                    }
-                                }
-                            }
-                            // var res = task.depends.split(",");
-                            // for (var j = 0; j < res.length; j++) {
-                            //     var [parent_id, delay] = res[j].split(":");
-                            //     delay = (delay == undefined) ? 0 : delay;
-                            //     var relation = initRelation(task.id, PRECEDES, delay);
-                            //     createRelation(server, key, parent_id, relation);
-                            // }
-                        });
-                    } else {
-                        var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
-                        $.getJSON(issueUrl, function (resp) {
-                            if (resp.issue.hasOwnProperty("relations")) {
-                                if (resp.issue.relations.length > 0) {
-                                    for (var j = 0; j < resp.issue.relations.length; j++) {
-                                        var relationId = resp.issue.relations[j].id;
-                                        deleteRelation(server, key, relationId);
-                                    }
-                                }
-                            }
-                        });
-                    }
+                    updateIssue(server, key, issue, taskTree.children[i]);
                 }
             }
         }
@@ -1208,15 +1311,15 @@
   </div>
   -->
         </div>
-        
+
         <div class="__template__" type="CHANGE_STATUS">
-                <!--
+            <!--
         <div class="taskStatusBox">
         </div>
       -->
-            </div>
+        </div>
 
-  <div class="__template__" type="TASK_EDITOR">
+        <div class="__template__" type="TASK_EDITOR">
             <!--
   <div class="ganttTaskEditor">
     <h2 class="taskData">Task editor</h2>
@@ -1397,7 +1500,7 @@
                 opt.attr("status", res.id);
                 if (task.task.status == res.id)
                     opt.attr("selected", "true");
-                    statusSelected.append(opt);
+                statusSelected.append(opt);
             }
         });
 
