@@ -604,8 +604,8 @@ GridEditor.prototype.bindRowInputEvents = function (task, taskRow) {
       changer.remove();
       self.master.beginTransaction();
       //remove status constraints dangph
-      // task.changeStatus(newStatus);
-      task.status = newStatus;
+      task.changeStatus(newStatus);
+      // task.status = newStatus;
       self.master.endTransaction();
       el.attr("status", task.status);
     });
@@ -790,8 +790,8 @@ GridEditor.prototype.openFullEditor = function (task, editOnlyAssig) {
 
       //change status
        //remove status constraints dangph 
-      // task.changeStatus(taskEditor.find("#status").val());
-      task.status = taskEditor.find("#status").val();
+      task.changeStatus(taskEditor.find("#status").val());
+      // task.status = taskEditor.find("#status").val();
 
 
       if (self.master.endTransaction()) {

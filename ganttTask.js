@@ -496,6 +496,11 @@ Task.prototype.getChildrenBoudaries = function () {
 Task.prototype.changeStatus = function (newStatus,forceStatusCheck) {
   //console.debug("changeStatus: "+this.name+" from "+this.status+" -> "+newStatus);
 
+  //dangph
+  //dont check any constrains
+  this.status = newStatus;
+  return true;
+
   var cone = this.getDescendant();
 
   function propagateStatus(task, newStatus, manuallyChanged, propagateFromParent, propagateFromChildren) {
