@@ -196,6 +196,7 @@
                         task.type = "";
                         task.typeId = "";
                         task.depends = "";
+                        task.relations = [];
 
                         //reflect assignees
                         //one task - one user - many role
@@ -255,7 +256,7 @@
                     // for (var i = 0; i < demoTask.length; i++) {
                     //     project.tasks.push(demoTask[i]);
                     // }
-                   
+
                     console.log("Task: ", project);
                     // return;
                     // var project = getDemoProject();
@@ -298,8 +299,11 @@
                             }
                         }
                     }
-                    var posIssueToId = getTaskPosition(relation.issue_to_id, tasks);
-                    tasks[posIssueToId].depends = depends;
+                    if (depends != "") {
+                        var posIssueToId = getTaskPosition(relation.issue_to_id, tasks);
+                        tasks[posIssueToId].depends = depends;
+                        tasks[posIssueToId].relations.push(relation);
+                    }
                 }
             }
         }
@@ -560,7 +564,7 @@
         function saveGanttOnServer() {
 
             //this is a simulation: save data to the local storage or to the textarea
-            saveInLocalStorage();
+            // saveInLocalStorage();
             //deleted task
             if (ge.deletedTaskIds.length > 0) {
                 if (confirm("TASK_THAT_WILL_BE_REMOVED\n" + ge.deletedTaskIds.length)) {
