@@ -264,6 +264,12 @@
                     project.canWriteOnParent = true;
                     project.canAdd = true;
 
+                    //demo task
+                    // var demoTask = getDemoTask();
+                    // for (var i = 0; i < demoTask.length; i++) {
+                    //     project.tasks.push(demoTask[i]);
+                    // }
+                   
                     console.log("Task: ", project);
                     // return;
                     // var project = getDemoProject();
@@ -355,7 +361,7 @@
                         if (relations[precedeId][j].issue_to_id == oldId) {
                             relations[precedeId][j].issue_to_id = newId;
                         }
-                        if (isNaN(precedeId)) {
+                        if (isNaN(precedeId) || precedeId < 0) {
                             //do nothing
                         } else {
                             console.log("create: ", JSON.stringify(relations[precedeId][j]));
@@ -368,12 +374,12 @@
                         }
                     }
 
-                    if (isNaN(precedeId)) {
+                    if (isNaN(precedeId) || precedeId < 0) {
                         var rb = {
                             "precede_id": precedeId
                         };
                         relationsBackward[newId].push(rb);
-                    } 
+                    }
                 }
                 // relationsBackward[oldId] = undefined;
             }
@@ -382,7 +388,7 @@
                 relations[newId] = [];
                 for (var i = 0; i < relations[oldId].length; i++) {
                     var issueToId = relations[oldId][i].issue_to_id;
-                    if (isNaN(issueToId)) {
+                    if (isNaN(issueToId) || issueToId < 0) {
                         for (var j = 0; j < relationsBackward[issueToId].length; j++) {
                             if (relationsBackward[issueToId][j].precede_id == oldId) {
                                 relationsBackward[issueToId][j].precede_id = newId;
@@ -550,11 +556,12 @@
 
             var taskTree = buildTaskTree(prj.tasks);
             console.log("taskTree : ", taskTree);
+            console.log("taskTree : ", prj.tasks);
 
             var [relations, relationsBackward] = buildRelation(prj.tasks);
             console.log("relation: ", relations);
             console.log("relation backward: ", relationsBackward);
-            // return;  
+            // return;
             // var res = saveOnServer(taskTree);
 
             //create or update issue
@@ -776,7 +783,7 @@
                     }
                 }
 
-                if (isNaN(issue.issue.id)) {
+                if (isNaN(issue.issue.id) || issue.issue.id < 0) {
                     ajaxCreateIssue(server, key, issue, taskTree.children[i], relations, relationsBackward);
                 } else {
                     ajaxUpdateIssue(server, key, issue, taskTree.children[i], relations, relationsBackward);
@@ -791,6 +798,148 @@
             relation.relation.relation_type = relation_type;
             relation.relation.delay = parseInt(delay, 10);
             return relation;
+        }
+
+        function getDemoTask() {
+            tasks = [{
+                    "id": -2,
+                    "name": "coding",
+                    "progress": 0,
+                    "progressByWorklog": false,
+                    "relevance": 0,
+                    "type": "",
+                    "typeId": "",
+                    "description": "",
+                    "code": "",
+                    "level": 1,
+                    "status": "1",
+                    "depends": "",
+                    "canWrite": true,
+                    "start": new Date().getTime(),
+                    "duration": 1,
+                    "end": new Date().getTime(),
+                    "startIsMilestone": false,
+                    "endIsMilestone": false,
+                    "collapsed": false,
+                    "assigs": [],
+                    "hasChild": true
+                },
+                {
+                    "id": -3,
+                    "name": "gantt part",
+                    "progress": 0,
+                    "progressByWorklog": false,
+                    "relevance": 0,
+                    "type": "",
+                    "typeId": "",
+                    "description": "",
+                    "code": "",
+                    "level": 2,
+                    "status": "1",
+                    "depends": "4:2",
+                    "canWrite": true,
+                    "start": new Date().getTime(),
+                    "duration": 1,
+                    "end": new Date().getTime(),
+                    "startIsMilestone": false,
+                    "endIsMilestone": false,
+                    "collapsed": false,
+                    "assigs": [],
+                    "hasChild": false
+                },
+                {
+                    "id": -4,
+                    "name": "editor part",
+                    "progress": 0,
+                    "progressByWorklog": false,
+                    "relevance": 0,
+                    "type": "",
+                    "typeId": "",
+                    "description": "",
+                    "code": "",
+                    "level": 2,
+                    "status": "1",
+                    "depends": "",
+                    "canWrite": true,
+                    "start": new Date().getTime(),
+                    "duration": 1,
+                    "end": new Date().getTime(),
+                    "startIsMilestone": false,
+                    "endIsMilestone": false,
+                    "collapsed": false,
+                    "assigs": [],
+                    "hasChild": false
+                },
+                {
+                    "id": -5,
+                    "name": "testing",
+                    "progress": 0,
+                    "progressByWorklog": false,
+                    "relevance": 0,
+                    "type": "",
+                    "typeId": "",
+                    "description": "",
+                    "code": "",
+                    "level": 1,
+                    "status": "1",
+                    "depends": "",
+                    "canWrite": true,
+                    "start": new Date().getTime(),
+                    "duration": 1,
+                    "end": new Date().getTime(),
+                    "startIsMilestone": false,
+                    "endIsMilestone": false,
+                    "collapsed": false,
+                    "assigs": [],
+                    "hasChild": true
+                },
+                {
+                    "id": -6,
+                    "name": "test on safari",
+                    "progress": 0,
+                    "progressByWorklog": false,
+                    "relevance": 0,
+                    "type": "",
+                    "typeId": "",
+                    "description": "",
+                    "code": "",
+                    "level": 2,
+                    "status": "1",
+                    "depends": "3:2",
+                    "canWrite": true,
+                    "start": new Date().getTime(),
+                    "duration": 1,
+                    "end": new Date().getTime(),
+                    "startIsMilestone": false,
+                    "endIsMilestone": false,
+                    "collapsed": false,
+                    "assigs": [],
+                    "hasChild": false
+                }, {
+                    "id": -7,
+                    "name": "test on ie",
+                    "progress": 0,
+                    "progressByWorklog": false,
+                    "relevance": 0,
+                    "type": "",
+                    "typeId": "",
+                    "description": "",
+                    "code": "",
+                    "level": 2,
+                    "status": "1",
+                    "depends": "3:1",
+                    "canWrite": true,
+                    "start": new Date().getTime(),
+                    "duration": 1,
+                    "end": new Date().getTime(),
+                    "startIsMilestone": false,
+                    "endIsMilestone": false,
+                    "collapsed": false,
+                    "assigs": [],
+                    "hasChild": false
+                }
+            ];
+            return tasks;
         }
 
         function getDemoProject() {
