@@ -255,6 +255,8 @@
                         }
                     }
 
+                    mapDependTask(project.tasks, issues[0].issues);
+
                     // project.tasks.sort(function (a, b) {
                     //     return a.id - b.id;
                     // });
@@ -281,9 +283,43 @@
 
                 }).fail(function (problem) {
                     // handle errors (some request has failed)
-                    console.log("Problem " + problem);
+                    console.log("Problem: ", problem);
                 });
         });
+
+        function getTaskPosition(taskId, tasks) {
+            for (var i = 0; i < tasks.length; i++) {
+                if (tasks[i].id == taskId) {
+                    return i;
+                }
+            }
+            return 0;
+        }
+
+        function mapDependTask(tasks, issues) {
+            for (var i = 0; i < issues.length; i++) {
+                var issue = issues[i];
+                if (issue.relations.length > 0) {
+                    var depends = "";
+                    for (var j = 0; j < issue.relations.length; j++) {
+                        var relation = issue.relations[j];
+                        if (relation.relation_type == PRECEDES && relation.issue_to_id == issue.id) {
+                            //get task position
+                            // plus 1 because adding root prject element in editor
+                            var posIssueId = getTaskPosition(relation.issue_id, tasks) + 1;
+                            if (depends == "") {
+                                depends = posIssueId + ":" + relation.delay;
+                            } else {
+                                depends += "," + posIssueId + ":" + relation.delay;
+                            }
+                        }
+                    }
+                    var posIssueToId = getTaskPosition(relation.issue_to_id, tasks);
+                    tasks[posIssueToId].depends = depends;
+                }
+            }
+        }
+
 
         function checkParent(project, task) {
             for (var i = 0; i < project.tasks.length; i++) {
