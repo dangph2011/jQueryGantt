@@ -478,15 +478,23 @@
                 }
             }
 
-            console.log("descendant: ", ge.tasks[1].getDescendant());
             //up to date Task
             var prj = ge.saveProject();
 
             var taskTree = buildTaskTree(prj.tasks);
             console.log("taskTree : ", taskTree);
 
+            var [relations, relationsBackward] = buildRelation(prj.tasks);
+            // console.log("relation: ", relations);
+            // console.log("relation backward: ", relationsBackward);
+            // return;
             // var res = saveOnServer(taskTree);
+
+            //create or update issue
             createOrUpdateIssue(taskTree[0]);
+
+            //create and update (deleting before creating) relation
+            
 
             // for (var i = 1; i < prj.tasks.length; i++) {
             //     var task = prj.tasks[i];
@@ -593,6 +601,32 @@
             //         }
             //     }
             // }
+        }
+
+        function buildRelation(tasks) {
+            var relations = {};
+            var relationsBackward = {};
+            for (var i = 0; i < tasks.length; i++) {
+                var task = tasks[i];
+                if (task.hasOwnProperty("depends") && task.depends != "") {
+                    relationsBackward[task.id] = [];
+                    var rel = task.depends.split(",");
+                    for (var j = 0; j < rel.length; j++) {
+                        var [positionId, delay] = rel[j].split(":");
+                        var precedeId = tasks[positionId-1].id;
+                        delay = (delay == undefined) ? 0 : delay;
+                        var r = {"issue_to_id": task.id, "delay": delay, "type": PRECEDES, "created": false};
+                        if (relations[precedeId] == undefined) {
+                            relations[precedeId] = [];
+                        }
+                        relations[precedeId].push(r);
+
+                        var rb = {"precede_id": precedeId};
+                        relationsBackward[task.id].push(rb);
+                    }
+                }
+            }
+            return [relations, relationsBackward];
         }
 
         function buildTaskTree(tasks) {
