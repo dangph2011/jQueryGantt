@@ -220,7 +220,7 @@
                         //push all child issue to childQueue
                         if (issue.hasOwnProperty("parent")) {
                             task.parent_id = issue.parent.id;
-                            childQueue.push(task);
+                            childQueue.unshift(task);
                         } else {
                             project.tasks.push(task);
                         }
@@ -286,6 +286,8 @@
                 var issue = issues[i];
                 if (issue.relations.length > 0) {
                     var depends = "";
+                    var posIssueToId = getTaskPosition(issue.id, tasks);
+
                     for (var j = 0; j < issue.relations.length; j++) {
                         var relation = issue.relations[j];
                         if (relation.relation_type == PRECEDES && relation.issue_to_id == issue.id) {
@@ -297,12 +299,11 @@
                             } else {
                                 depends += "," + posIssueId + ":" + relation.delay;
                             }
+                            tasks[posIssueToId].relations.push(relation);
                         }
                     }
                     if (depends != "") {
-                        var posIssueToId = getTaskPosition(relation.issue_to_id, tasks);
                         tasks[posIssueToId].depends = depends;
-                        tasks[posIssueToId].relations.push(relation);
                     }
                 }
             }
@@ -388,10 +389,6 @@
                         if (isNaN(precedeId) || precedeId < 0) {
                             //do nothing
                         } else {
-                            console.log("create: ", JSON.stringify(relations[precedeId][j]));
-                            console.log("create: ", JSON.stringify({
-                                "relation": relations[precedeId][j]
-                            }));
                             ajaxCreateRelation(server, key, precedeId, {
                                 "relation": relations[precedeId][j]
                             });
@@ -427,11 +424,6 @@
 
                         relations[newId].push(r);
                     } else {
-                        // relations[oldId][i].created = true;
-                        console.log("create: ", JSON.stringify(relations[oldId][i]));
-                        console.log("create: ", JSON.stringify({
-                            "relation": relations[oldId][i]
-                        }));
                         ajaxCreateRelation(server, key, newId, {
                             "relation": relations[oldId][i]
                         });
@@ -453,7 +445,7 @@
                     createOrUpdateIssue(taskTree);
                 },
                 error: function (data) {
-                    console.log('ERROR Updateissue id: ', issue.issue.id);
+                    console.log('ERROR Update issue id: ', data);
                 },
             });
         }
@@ -528,7 +520,7 @@
             });
         }
 
-        function ajaxDeleteAndCreateRelation(server, key, relationId, task) {
+        function ajaxDeleteAndCreateRelation(server, key, relationId, issueId, relation) {
             $.ajax({
                 type: "DELETE",
                 url: proxy + server + '/relations/' + relationId + ".json" + "?key=" + key,
@@ -536,29 +528,17 @@
                 contentType: "application/json; charset=utf-8",
                 // async: false,
                 success: function (data) {
-                    console.log('SUCCESS delete relation: ', data);
-                    if (task != null) {
-                        createRelate(server, key, task);
-                    }
+                    console.log('SUCCESS delete relation: ', relationId + " " + data);
+                    ajaxCreateRelation(server, key, issueId, relation);
                 },
                 error: function (xhr, status, error) {
-                    if (error = "Not Found" && task != null) {
-                        createRelate(server, key, task);
+                    if (error = "Not Found") {
+                        ajaxCreateRelation(server, key, issueId, relation);
                     } else {
                         console.log('ERROR delete relation: ', error);
                     }
                 },
             });
-        }
-
-        function createRelate(server, key, task) {
-            var res = task.depends.split(",");
-            for (var j = 0; j < res.length; j++) {
-                var [parent_id, delay] = res[j].split(":");
-                delay = (delay == undefined) ? 0 : delay;
-                var relation = initRelation(task.id, PRECEDES, delay);
-                ajaxCreateRelation(server, key, parent_id, relation);
-            }
         }
 
         function saveGanttOnServer() {
@@ -704,7 +684,7 @@
         function buildRelation(tasks) {
             var relations = {};
             var relationsBackward = {};
-            for (var i = 0; i < tasks.length; i++) {
+            for (var i = 1; i < tasks.length; i++) {
                 var task = tasks[i];
                 if (task.hasOwnProperty("depends") && task.depends != "") {
                     relationsBackward[task.id] = [];
@@ -718,15 +698,46 @@
                             "delay": delay,
                             "relation_type": PRECEDES
                         };
-                        if (relations[precedeId] == undefined) {
-                            relations[precedeId] = [];
-                        }
-                        relations[precedeId].push(r);
 
-                        var rb = {
-                            "precede_id": precedeId
-                        };
-                        relationsBackward[task.id].push(rb);
+                        //create or update relation
+                        //precedeId and task id exists -> create Or update immediately
+                        if (!isNaN(precedeId) && precedeId > 0 && !isNaN(task.id) && task.id > 0) {
+                            var relId = 0;
+                            for (var k = 0; k < task.relations.length; k++) {
+                                if (task.relations[k].issue_id == precedeId && task.relations[k].issue_to_id == task.id) {
+                                    relId = task.relations[k].id;
+                                    break;
+                                }
+                            }
+
+                            if (relId > 0) {
+                                ajaxDeleteAndCreateRelation(server, key, relId, precedeId, {
+                                    "relation": r
+                                });
+                            } else {
+                                ajaxCreateRelation(server, key, precedeId, {
+                                    "relation": r
+                                });
+                            }
+
+
+                        } else {
+                            //else push to object and create after task is created
+                            if (relations[precedeId] == undefined) {
+                                relations[precedeId] = [];
+                            }
+                            relations[precedeId].push(r);
+
+                            var rb = {
+                                "precede_id": precedeId
+                            };
+                            relationsBackward[task.id].push(rb);
+                        }
+                    }
+                } else {
+                    //delete all relation
+                    for (var k = 0; k < task.relations.length; k++) {
+                        ajaxDeleteRelation(server, key, task.relations[k].id);
                     }
                 }
             }
