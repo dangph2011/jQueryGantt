@@ -88,7 +88,7 @@
 
         var proxy = 'https://cors-anywhere.herokuapp.com/';
         var server = "http://159.65.9.28/redmine";
-        var projectIdentifier = 6;
+        var projectIdentifier = 7;
         var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
 
         $(function () {
@@ -230,7 +230,6 @@
                                 }
                             }
                             task.depends = depends;
-                            // console.log("Depends: ", task);
                         }
 
                         //push all child issue to childQueue
@@ -320,7 +319,7 @@
             return ret;
         }
 
-        function ajaxCreateIssue(server, key, issue, taskTree) {
+        function ajaxCreateIssue(server, key, issue, taskTree, relations, relationsBackward) {
             $.ajax({
                 type: 'POST',
                 url: proxy + server + '/issues.json' + "?key=" + key,
@@ -329,8 +328,10 @@
                 contentType: "application/json; charset=utf-8",
                 success: function (data) {
                     console.log('SUCCESS create issue: ', data);
-                    updateParentId(taskTree, (JSON.parse(data)).issue.id);
-                    createOrUpdateIssue(taskTree);
+                    var newId = (JSON.parse(data)).issue.id;
+                    updateParentId(taskTree, newId);
+                    updateRelationId(issue.issue.id, newId, relations, relationsBackward);
+                    createOrUpdateIssue(taskTree, relations, relationsBackward);
                 },
                 error: function (data) {
                     console.log('ERROR create issue: ', data);
@@ -341,6 +342,72 @@
         function updateParentId(taskTree, newParentId) {
             for (var i = 0; i < taskTree.children.length; i++) {
                 taskTree.children[i].parent_id = newParentId;
+            }
+        }
+
+        //poor performance
+        function updateRelationId(oldId, newId, relations, relationsBackward) {
+            if (relationsBackward[oldId] != undefined) {
+                relationsBackward[newId] = [];
+                for (var i = 0; i < relationsBackward[oldId].length; i++) {
+                    var precedeId = relationsBackward[oldId][i].precede_id;
+                    for (var j = 0; j < relations[precedeId].length; j++) {
+                        if (relations[precedeId][j].issue_to_id == oldId) {
+                            relations[precedeId][j].issue_to_id = newId;
+                        }
+                        if (isNaN(precedeId)) {
+                            //do nothing
+                        } else {
+                            console.log("create: ", JSON.stringify(relations[precedeId][j]));
+                            console.log("create: ", JSON.stringify({
+                                "relation": relations[precedeId][j]
+                            }));
+                            ajaxCreateRelation(server, key, precedeId, {
+                                "relation": relations[precedeId][j]
+                            });
+                        }
+                    }
+
+                    if (isNaN(precedeId)) {
+                        var rb = {
+                            "precede_id": precedeId
+                        };
+                        relationsBackward[newId].push(rb);
+                    } 
+                }
+                // relationsBackward[oldId] = undefined;
+            }
+
+            if (relations[oldId] != undefined) {
+                relations[newId] = [];
+                for (var i = 0; i < relations[oldId].length; i++) {
+                    var issueToId = relations[oldId][i].issue_to_id;
+                    if (isNaN(issueToId)) {
+                        for (var j = 0; j < relationsBackward[issueToId].length; j++) {
+                            if (relationsBackward[issueToId][j].precede_id == oldId) {
+                                relationsBackward[issueToId][j].precede_id = newId;
+                            }
+                        }
+
+                        var r = {
+                            "issue_to_id": relations[oldId][i].issue_to_id,
+                            "delay": relations[oldId][i].delay,
+                            "relation_type": PRECEDES
+                        };
+
+                        relations[newId].push(r);
+                    } else {
+                        // relations[oldId][i].created = true;
+                        console.log("create: ", JSON.stringify(relations[oldId][i]));
+                        console.log("create: ", JSON.stringify({
+                            "relation": relations[oldId][i]
+                        }));
+                        ajaxCreateRelation(server, key, newId, {
+                            "relation": relations[oldId][i]
+                        });
+                    }
+                }
+                // relations[oldId] = undefined;
             }
         }
 
@@ -485,16 +552,16 @@
             console.log("taskTree : ", taskTree);
 
             var [relations, relationsBackward] = buildRelation(prj.tasks);
-            // console.log("relation: ", relations);
-            // console.log("relation backward: ", relationsBackward);
-            // return;
+            console.log("relation: ", relations);
+            console.log("relation backward: ", relationsBackward);
+            // return;  
             // var res = saveOnServer(taskTree);
 
             //create or update issue
-            createOrUpdateIssue(taskTree[0]);
+            createOrUpdateIssue(taskTree[0], relations, relationsBackward);
 
             //create and update (deleting before creating) relation
-            
+
 
             // for (var i = 1; i < prj.tasks.length; i++) {
             //     var task = prj.tasks[i];
@@ -613,15 +680,21 @@
                     var rel = task.depends.split(",");
                     for (var j = 0; j < rel.length; j++) {
                         var [positionId, delay] = rel[j].split(":");
-                        var precedeId = tasks[positionId-1].id;
+                        var precedeId = tasks[positionId - 1].id;
                         delay = (delay == undefined) ? 0 : delay;
-                        var r = {"issue_to_id": task.id, "delay": delay, "type": PRECEDES, "created": false};
+                        var r = {
+                            "issue_to_id": task.id,
+                            "delay": delay,
+                            "relation_type": PRECEDES
+                        };
                         if (relations[precedeId] == undefined) {
                             relations[precedeId] = [];
                         }
                         relations[precedeId].push(r);
 
-                        var rb = {"precede_id": precedeId};
+                        var rb = {
+                            "precede_id": precedeId
+                        };
                         relationsBackward[task.id].push(rb);
                     }
                 }
@@ -652,7 +725,7 @@
         //     for (var i = 0; i < );
         // }
 
-        function createOrUpdateIssue(taskTree) {
+        function createOrUpdateIssue(taskTree, relations, relationsBackward) {
             if (taskTree.children.length < 1) {
                 return;
             }
@@ -704,9 +777,9 @@
                 }
 
                 if (isNaN(issue.issue.id)) {
-                    ajaxCreateIssue(server, key, issue, taskTree.children[i]);
+                    ajaxCreateIssue(server, key, issue, taskTree.children[i], relations, relationsBackward);
                 } else {
-                    ajaxUpdateIssue(server, key, issue, taskTree.children[i]);
+                    ajaxUpdateIssue(server, key, issue, taskTree.children[i], relations, relationsBackward);
                 }
             }
         }
