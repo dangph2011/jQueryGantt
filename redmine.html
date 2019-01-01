@@ -482,7 +482,7 @@
             //up to date Task
             var prj = ge.saveProject();
 
-            var taskTree = list_to_tree(prj.tasks);
+            var taskTree = buildTaskTree(prj.tasks);
             console.log("taskTree : ", taskTree);
 
             // var res = saveOnServer(taskTree);
@@ -595,18 +595,18 @@
             // }
         }
 
-        function list_to_tree(list) {
+        function buildTaskTree(tasks) {
             var map = {},
                 node, roots = [],
                 i;
-            for (i = 0; i < list.length; i++) {
-                map[list[i].id] = i; // initialize the map
-                list[i].children = []; // initialize the children
+            for (i = 0; i < tasks.length; i++) {
+                map[tasks[i].id] = i; // initialize the map
+                tasks[i].children = []; // initialize the children
             }
-            for (i = 0; i < list.length; i++) {
-                node = list[i];
+            for (i = 0; i < tasks.length; i++) {
+                node = tasks[i];
                 if (node.hasOwnProperty("parent_id") && node.parent_id !== "0") {
-                    list[map[node.parent_id]].children.push(node);
+                    tasks[map[node.parent_id]].children.push(node);
                 } else {
                     roots.push(node);
                 }
