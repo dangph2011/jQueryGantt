@@ -320,8 +320,8 @@
             return ret;
         }
 
-        function createIssue(server, key, issue, taskTree) {
-            jQuery.ajax({
+        function ajaxCreateIssue(server, key, issue, taskTree) {
+            $.ajax({
                 type: 'POST',
                 url: proxy + server + '/issues.json' + "?key=" + key,
                 data: JSON.stringify(issue),
@@ -344,8 +344,8 @@
             }
         }
 
-        function updateIssue(server, key, issue, taskTree) {
-            jQuery.ajax({
+        function ajaxUpdateIssue(server, key, issue, taskTree) {
+            $.ajax({
                 type: 'PUT',
                 url: proxy + server + '/issues/' + issue.issue.id + '.json' + "?key=" + key,
                 data: JSON.stringify(issue),
@@ -364,11 +364,11 @@
         function deleteIssues(server, key, issueIds) {
             for (var i = 0; i < issueIds.length; i++) {
                 var issueId = issueIds[i];
-                deleteIssue(server, key, issueId);
+                ajaxDeleteIssue(server, key, issueId);
             }
         }
 
-        function deleteIssue(server, key, issueId) {
+        function ajaxDeleteIssue(server, key, issueId) {
             $.ajax({
                 type: "DELETE",
                 url: proxy + server + '/issues/' + issueId + ".json" + "?key=" + key,
@@ -383,8 +383,8 @@
             });
         }
 
-        function updateMembership(server, key, membershipId, membership) {
-            jQuery.ajax({
+        function ajaxUpdateMembership(server, key, membershipId, membership) {
+            $.ajax({
                 type: 'PUT',
                 url: proxy + server + '/memberships/' + membershipId + '.json' + "?key=" + key,
                 data: JSON.stringify(membership),
@@ -399,8 +399,8 @@
             });
         }
 
-        function createRelation(server, key, issueId, relation) {
-            jQuery.ajax({
+        function ajaxCreateRelation(server, key, issueId, relation) {
+            $.ajax({
                 type: 'POST',
                 url: proxy + server + '/issues/' + issueId + "/relations.json" + "?key=" + key,
                 data: JSON.stringify(relation),
@@ -415,7 +415,7 @@
             });
         }
 
-        function deleteRelation(server, key, relationId) {
+        function ajaxDeleteRelation(server, key, relationId) {
             $.ajax({
                 type: "DELETE",
                 url: proxy + server + '/relations/' + relationId + ".json" + "?key=" + key,
@@ -431,7 +431,7 @@
             });
         }
 
-        function deleteAndCreateRelation(server, key, relationId, task) {
+        function ajaxDeleteAndCreateRelation(server, key, relationId, task) {
             $.ajax({
                 type: "DELETE",
                 url: proxy + server + '/relations/' + relationId + ".json" + "?key=" + key,
@@ -460,7 +460,7 @@
                 var [parent_id, delay] = res[j].split(":");
                 delay = (delay == undefined) ? 0 : delay;
                 var relation = initRelation(task.id, PRECEDES, delay);
-                createRelation(server, key, parent_id, relation);
+                ajaxCreateRelation(server, key, parent_id, relation);
             }
         }
 
@@ -557,7 +557,7 @@
             //     }
 
             //     if (isNaN(issue.issue.id)) {
-            //         createIssue(server, key, issue);
+            //         ajaxCreateIssue(server, key, issue);
             //         if (task.hasOwnProperty("depends") && task.depends != "") {
             //             createRelate(server, key, task);
             //         }
@@ -574,7 +574,7 @@
             //                     if (resp.issue.relations.length > 0) {
             //                         for (var j = 0; j < resp.issue.relations.length; j++) {
             //                             var relationId = resp.issue.relations[j].id;
-            //                             deleteAndCreateRelation(server, key, relationId, t);
+            //                             ajaxDeleteAndCreateRelation(server, key, relationId, t);
             //                         }
             //                     }
             //                 }
@@ -583,7 +583,7 @@
             //                 //     var [parent_id, delay] = res[j].split(":");
             //                 //     delay = (delay == undefined) ? 0 : delay;
             //                 //     var relation = initRelation(task.id, PRECEDES, delay);
-            //                 //     createRelation(server, key, parent_id, relation);
+            //                 //     ajaxCreateRelation(server, key, parent_id, relation);
             //                 // }
             //             });
             //         } else {
@@ -593,7 +593,7 @@
             //                     if (resp.issue.relations.length > 0) {
             //                         for (var j = 0; j < resp.issue.relations.length; j++) {
             //                             var relationId = resp.issue.relations[j].id;
-            //                             deleteRelation(server, key, relationId);
+            //                             ajaxDeleteRelation(server, key, relationId);
             //                         }
             //                     }
             //                 }
@@ -704,9 +704,9 @@
                 }
 
                 if (isNaN(issue.issue.id)) {
-                    createIssue(server, key, issue, taskTree.children[i]);
+                    ajaxCreateIssue(server, key, issue, taskTree.children[i]);
                 } else {
-                    updateIssue(server, key, issue, taskTree.children[i]);
+                    ajaxUpdateIssue(server, key, issue, taskTree.children[i]);
                 }
             }
         }
