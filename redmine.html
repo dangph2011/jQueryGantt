@@ -92,6 +92,16 @@
         var projectIdentifier = 7;
         var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
 
+        $(document).ajaxStop(function () {
+            console.log("stopppppp");
+            document.getElementById("saveOnServer").disabled = false;
+        });
+
+        $(document).ajaxStart(function () {
+            console.log("startttttt");
+            document.getElementById("saveOnServer").disabled = true;
+        });
+
         $(function () {
             var canWrite = true; //this is the default for test purposes
 
@@ -1524,7 +1534,7 @@
     <button onclick="setFillter();" class="button textual requireWrite" title="edit resources"><span class="teamworkIcon">&#x66;</span></button>
       
     &nbsp; &nbsp; &nbsp; &nbsp;
-    <button onclick="saveGanttOnServer();" class="button first big requireWrite" title="Save">Save</button>
+    <button onclick="saveGanttOnServer();" id="saveOnServer" class="button first big requireWrite" title="Save">Save</button>
     <button onclick='newProject();' class='button requireWrite newproject'><em>clear project</em></button>
     <button class="button login" title="login/enroll" onclick="loginEnroll($(this));" style="display:none;">login/enroll</button>
     <button class="button opt collab" title="Start with Twproject" onclick="collaborate($(this));" style="display:none;"><em>collaborate</em></button>
