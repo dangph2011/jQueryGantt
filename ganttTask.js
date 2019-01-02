@@ -30,28 +30,28 @@ function TaskFactory() {
   /**
    * Build a new Task
    */
-  this.build = function (id, name, code, level, start, duration, collapsed) {
+  this.build = function (id, name, code, level, start, duration, collapsed = false, progress = 0, description = "", status = 1, assigs = [], customFields = []) {
     // Set at beginning of day
     var adjusted_start = computeStart(start);
     var calculated_end = computeEndByDuration(adjusted_start, duration);
-    return new Task(id, name, code, level, adjusted_start, calculated_end, duration, collapsed);
+    return new Task(id, name, code, level, adjusted_start, calculated_end, duration, collapsed, progress, description, status, assigs, customFields);
   };
 
 }
 
-function Task(id, name, code, level, start, end, duration, collapsed) {
+function Task(id, name, code, level, start, end, duration, collapsed, progress, description, status, assigs, customFields) {
   this.id = id;
   this.name = name;
-  this.progress = 0;
+  this.progress = progress;
   this.progressByWorklog = false;
   this.relevance = 0;
   this.type = "";
   this.typeId = "";
-  this.description = "";
+  this.description = description;
   this.code = code;
   this.level = level;
   //create new task with new status
-  this.status = 1;
+  this.status = status;
   this.depends = "";
 
   this.start = start;
@@ -76,13 +76,13 @@ function Task(id, name, code, level, start, end, duration, collapsed) {
 
   this.change = false;
 
-  this.assigs = [];
-  this.customFields = [];
+  this.assigs = assigs;
+  this.customFields = customFields;
 
-  // watch(this, ["id", "name", "description", "status", "start", "end", "level"], function(){
-  //   console.log("watch: ",  this.getString() + Date.now());
-  //   this.change = true;
-  // });
+  watch(this, ["name", "progress", "description", "level", "status", "start", "end", "duration", "assigns", "customFields"], function(){
+    console.log("watch: ",  this.getString() + " Time:" + Date.now());
+    this.change = true;
+  });
 }
 
 Task.prototype.getString = function () {
