@@ -793,54 +793,58 @@
 
             for (var i = 0; i < taskTree.children.length; i++) {
                 var task = taskTree.children[i];
-                var issue = {};
-                issue.issue = {};
 
-                issue.issue.project_id = projectIdentifier;
+                if (task.change) {
+                    var issue = {};
+                    issue.issue = {};
 
-                if (task.hasOwnProperty("id")) {
-                    issue.issue.id = task.id;
-                }
-                if (task.hasOwnProperty("name")) {
-                    issue.issue.subject = task.name;
-                }
-                if (task.hasOwnProperty("progress")) {
-                    issue.issue.done_ratio = task.progress;
-                }
-                if (task.hasOwnProperty("description")) {
-                    issue.issue.description = task.description;
-                }
-                if (task.hasOwnProperty("start")) {
-                    issue.issue.start_date = (new Date(task.start)).format("yyyy-MM-dd");
-                }
-
-                if (task.hasOwnProperty("parent_id") && task.level > 1) {
-                    issue.issue.parent_issue_id = task.parent_id;
-                } else {
-                    issue.issue.parent_issue_id = "";
-                }
-
-                if (task.hasOwnProperty("end")) {
-                    issue.issue.due_date = (new Date(task.end)).format("yyyy-MM-dd");
-                }
-
-                if (task.hasOwnProperty("status")) {
-                    issue.issue.status_id = task.status;
-                }
-
-                if (task.hasOwnProperty("assigs")) {
-                    //issue - issue : 1 - 1.
-                    //get only the first user
-                    //assign only one user
-                    if (task.assigs[0] != null) {
-                        issue.issue.assigned_to_id = parseInt(task.assigs[0].resourceId, 10);
+                    if (task.hasOwnProperty("id")) {
+                        issue.issue.id = task.id;
                     }
-                }
+                    if (task.hasOwnProperty("name")) {
+                        issue.issue.subject = task.name;
+                    }
+                    if (task.hasOwnProperty("progress")) {
+                        issue.issue.done_ratio = task.progress;
+                    }
+                    if (task.hasOwnProperty("description")) {
+                        issue.issue.description = task.description;
+                    }
+                    if (task.hasOwnProperty("start")) {
+                        issue.issue.start_date = (new Date(task.start)).format("yyyy-MM-dd");
+                    }
 
-                if (isNaN(issue.issue.id) || issue.issue.id < 0) {
-                    ajaxCreateIssue(server, key, issue, taskTree.children[i], relations, relationsBackward);
+                    if (task.hasOwnProperty("parent_id") && task.level > 1) {
+                        issue.issue.parent_issue_id = task.parent_id;
+                    } else {
+                        issue.issue.parent_issue_id = "";
+                    }
+
+                    if (task.hasOwnProperty("end")) {
+                        issue.issue.due_date = (new Date(task.end)).format("yyyy-MM-dd");
+                    }
+
+                    if (task.hasOwnProperty("status")) {
+                        issue.issue.status_id = task.status;
+                    }
+
+                    if (task.hasOwnProperty("assigs")) {
+                        //issue - issue : 1 - 1.
+                        //get only the first user
+                        //assign only one user
+                        if (task.assigs[0] != null) {
+                            issue.issue.assigned_to_id = parseInt(task.assigs[0].resourceId, 10);
+                        }
+                    }
+
+                    if (isNaN(issue.issue.id) || issue.issue.id < 0) {
+                        issue.issue.project_id = projectIdentifier;
+                        ajaxCreateIssue(server, key, issue, task, relations, relationsBackward);
+                    } else {
+                        ajaxUpdateIssue(server, key, issue, task, relations, relationsBackward);
+                    }
                 } else {
-                    ajaxUpdateIssue(server, key, issue, taskTree.children[i], relations, relationsBackward);
+                    createOrUpdateIssue(task, relations, relationsBackward);
                 }
             }
         }
