@@ -136,6 +136,10 @@
 
             var issueStatusPath = server + "/issue_statuses.json?callback=?";
 
+            $.ajaxSetup({
+                global: false
+            });
+
             $.when($.getJSON(projectPath), $.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath),
                     $.getJSON(issueStatusPath))
                 .then(function (projectRm, memberships, issues, roles, issueStatus) {
@@ -281,6 +285,10 @@
                     // handle errors (some request has failed)
                     console.log("Problem: ", problem);
                 });
+
+            $.ajaxSetup({
+                global: true
+            });
         });
 
         function getTaskPosition(taskId, tasks) {
