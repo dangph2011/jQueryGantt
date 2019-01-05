@@ -727,24 +727,28 @@
                         //precedeId and task id exists -> create Or update immediately
                         if (!isNaN(precedeId) && precedeId > 0 && !isNaN(task.id) && task.id > 0) {
                             var relId = 0;
+                            var created = true;
                             for (var k = 0; k < task.relations.length; k++) {
                                 if (task.relations[k].issue_id == precedeId && task.relations[k].issue_to_id == task.id) {
                                     relId = task.relations[k].id;
+                                    if (delay == task.relations[k].delay) {
+                                        created = false;
+                                    }
                                     break;
                                 }
                             }
 
-                            if (relId > 0) {
-                                ajaxDeleteAndCreateRelation(server, key, relId, precedeId, {
-                                    "relation": r
-                                });
-                            } else {
-                                ajaxCreateRelation(server, key, precedeId, {
-                                    "relation": r
-                                });
+                            if (created) {
+                                if (relId > 0) {
+                                    ajaxDeleteAndCreateRelation(server, key, relId, precedeId, {
+                                        "relation": r
+                                    });
+                                } else {
+                                    ajaxCreateRelation(server, key, precedeId, {
+                                        "relation": r
+                                    });
+                                }
                             }
-
-
                         } else {
                             //else push to object and create after task is created
                             if (relations[precedeId] == undefined) {
