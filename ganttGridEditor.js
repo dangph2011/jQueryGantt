@@ -775,11 +775,51 @@ GridEditor.prototype.openFullEditor = function (task, editOnlyAssig) {
         var trAss = $(this);
         var assId = trAss.attr("assId");
         //var resId = trAss.find("[name=resourceId]").val();
-        var resName = trAss.find("[name=resource]").val(); // from smartcombo text input part
-        var role = trAss.find("[name=role]").val();
-        //var effort = millisFromString(trAss.find("[name=effort]").val(),true);         
-		ass={resource:resName, role:role};
-		task.assigs.push(ass);
+        var resId = trAss.find("[name=resourceId]").val();
+        var resName = trAss.find("[name=resourceId_txt]").val(); // from smartcombo text input part
+        var roleId = trAss.find("[name=roleId]").val();
+        var effort = millisFromString(trAss.find("[name=effort]").val(),true);
+
+        //check if the selected resource exists in ganttMaster.resources
+        var res= self.master.getOrCreateResource(resId,resName);
+
+        //if resource is not found nor created
+        if (!res)
+          return;
+
+        //check if an existing assig has been deleted and re-created with the same values
+        var found = false;
+        for (var i = 0; i < task.assigs.length; i++) {
+          var ass = task.assigs[i];
+
+          if (assId == ass.id) {
+            ass.effort = effort;
+            ass.roleId = roleId;
+            ass.resourceId = res.id;
+            ass.touched = true;
+            found = true;
+            break;
+
+          } else if (roleId == ass.roleId && res.id == ass.resourceId) {
+            ass.effort = effort;
+            ass.touched = true;
+            found = true;
+            break;
+
+          }
+        }
+
+        if (!found && resId && roleId) { //insert
+          cnt++;
+          var ass = task.createAssignment("tmp_" + new Date().getTime()+"_"+cnt, resId, roleId, effort);
+          ass.touched = true;
+        }
+
+    //     var resName = trAss.find("[name=resource]").val(); // from smartcombo text input part
+    //     var role = trAss.find("[name=role]").val();
+    //     //var effort = millisFromString(trAss.find("[name=effort]").val(),true);         
+		// ass={resource:resName, role:role};
+		// task.assigs.push(ass);
         
       });
 
