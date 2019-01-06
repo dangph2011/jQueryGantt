@@ -369,7 +369,7 @@
             return ret;
         }
 
-        function ajaxCreateIssue(server, key, issue, taskTree, relations, relationsBackward) {
+        function ajaxCreateIssue(server, key, issue, taskQueue, relations, relationsBackward) {
             $.ajax({
                 type: 'POST',
                 url: proxy + server + '/issues.json' + "?key=" + key,
@@ -379,9 +379,9 @@
                 success: function (data) {
                     console.log('SUCCESS create issue: ', data);
                     var newId = (JSON.parse(data)).issue.id;
-                    updateParentId(taskTree, newId);
+                    updateParentId(taskQueue, newId);
                     updateRelationId(issue.issue.id, newId, relations, relationsBackward);
-                    createOrUpdateIssue(taskTree, relations, relationsBackward);
+                    handleTask(taskQueue, relations, relationsBackward);
                 },
                 error: function (data) {
                     console.log('ERROR create issue: ', data);
@@ -389,9 +389,9 @@
             });
         }
 
-        function updateParentId(taskTree, newParentId) {
-            for (var i = 0; i < taskTree.children.length; i++) {
-                taskTree.children[i].parent_id = newParentId;
+        function updateParentId(taskQueue, newParentId) {
+            for (var i = 0; i < taskQueue[0].children.length; i++) {
+                taskQueue[0].children[i].parent_id = newParentId;
             }
         }
 
@@ -452,7 +452,7 @@
             }
         }
 
-        function ajaxUpdateIssue(server, key, issue, taskTree, relations, relationsBackward) {
+        function ajaxUpdateIssue(server, key, issue, taskQueue, relations, relationsBackward) {
             $.ajax({
                 type: 'PUT',
                 url: proxy + server + '/issues/' + issue.issue.id + '.json' + "?key=" + key,
@@ -461,12 +461,17 @@
                 contentType: "application/json; charset=utf-8",
                 success: function (data) {
                     console.log('SUCCESS Update issue id: ', issue.issue.id);
-                    createOrUpdateIssue(taskTree, relations, relationsBackward);
+                    handleTask(taskQueue, relations, relationsBackward);
                 },
                 error: function (data) {
                     if (data.status == 422) {
-                        console.log('Reupdate issue id: ', issue.issue.id);
-                        ajaxUpdateIssue(server, key, issue, taskTree, relations, relationsBackward);
+                        var issueUrl = server + "/issues/" + issue.issue.id + ".json" +
+                            "?include=relations&callback=?";
+                        $.getJSON(issueUrl, function (resp) {
+                            console.log('Reupdate issue id: ', issue.issue.id);
+                            ajaxUpdateIssue(server, key, issue, taskQueue, relations,
+                                relationsBackward);
+                        });
                     } else {
                         console.log('ERROR Update issue id: ', data);
                     }
@@ -582,18 +587,25 @@
             //up to date Task
             var prj = ge.saveProject();
 
-            var taskTree = buildTaskTree(prj.tasks);
-            console.log("taskTree : ", taskTree);
-            console.log("taskTree : ", prj.tasks);
-
+            console.log("task: ", prj.tasks);
             var [relations, relationsBackward] = buildRelation(prj.tasks);
             console.log("relation: ", relations);
             console.log("relation backward: ", relationsBackward);
+            var taskTree = buildTaskTree(prj.tasks);
+
+            var taskQueue = [];
+            taskQueue.push(taskTree[0]);
+            buildTaskQueue(taskTree[0], taskQueue);
+
+            console.log("task queue : ", taskQueue);
+            console.log("taskTree root : ", taskTree);
+            console.log("taskTree : ", prj.tasks);
             // return;
             // var res = saveOnServer(taskTree);
 
             //create or update issue
-            createOrUpdateIssue(taskTree[0], relations, relationsBackward);
+            handleTask(taskQueue, relations, relationsBackward);
+            // createOrUpdateIssue(taskTree[0], relations, relationsBackward);
 
             //create and update (deleting before creating) relation
 
@@ -729,7 +741,8 @@
                             var relId = 0;
                             var created = true;
                             for (var k = 0; k < task.relations.length; k++) {
-                                if (task.relations[k].issue_id == precedeId && task.relations[k].issue_to_id == task.id) {
+                                if (task.relations[k].issue_id == precedeId && task.relations[k].issue_to_id ==
+                                    task.id) {
                                     relId = task.relations[k].id;
                                     if (delay == task.relations[k].delay) {
                                         created = false;
@@ -772,6 +785,16 @@
             return [relations, relationsBackward];
         }
 
+        function buildTaskQueue(taskTree, taskQueue) {
+            if (taskTree.children.length < 1) {
+                return;
+            }
+            for (var i = 0; i < taskTree.children.length; i++) {
+                taskQueue.push(taskTree.children[i]);
+                buildTaskQueue(taskTree.children[i], taskQueue);
+            }
+        }
+
         function buildTaskTree(tasks) {
             var map = {},
                 node, roots = [],
@@ -791,9 +814,69 @@
             return roots;
         }
 
-        // function saveOnServer(taskTree){
-        //     for (var i = 0; i < );
-        // }
+        function handleTask(taskQueue, relations, relationsBackward) {
+            taskQueue.shift();
+            if (taskQueue.length == 0) {
+                return;
+            }
+            var task = taskQueue[0];
+
+            if (task.change) {
+                var issue = {};
+                issue.issue = {};
+
+                if (task.hasOwnProperty("id")) {
+                    issue.issue.id = task.id;
+                }
+
+                if (task.hasOwnProperty("name")) {
+                    issue.issue.subject = task.name;
+                }
+
+                if (task.hasOwnProperty("progress")) {
+                    issue.issue.done_ratio = task.progress;
+                }
+
+                if (task.hasOwnProperty("description")) {
+                    issue.issue.description = task.description;
+                }
+                if (task.children.length == 0) {
+                    if (task.hasOwnProperty("start")) {
+                        issue.issue.start_date = (new Date(task.start)).format("yyyy-MM-dd");
+                    }
+
+                    if (task.hasOwnProperty("end")) {
+                        issue.issue.due_date = (new Date(task.end)).format("yyyy-MM-dd");
+                    }
+                }
+
+                if (task.hasOwnProperty("parent_id") && task.level > 1) {
+                    issue.issue.parent_issue_id = task.parent_id;
+                }
+
+                if (task.hasOwnProperty("status")) {
+                    issue.issue.status_id = task.status;
+                }
+
+                if (task.hasOwnProperty("assigs")) {
+                    //issue - issue : 1 - 1.
+                    //get only the first user
+                    //assign only one user
+                    if (task.assigs[0] != null) {
+                        issue.issue.assigned_to_id = parseInt(task.assigs[0].resourceId, 10);
+                    }
+                }
+
+                issue.issue.project_id = projectIdentifier;
+                if (isNaN(issue.issue.id) || issue.issue.id < 0) {
+                    ajaxCreateIssue(server, key, issue, taskQueue, relations, relationsBackward);
+                } else {
+                    ajaxUpdateIssue(server, key, issue, taskQueue, relations, relationsBackward);
+                }
+            } else {
+                handleTask(taskQueue, relations, relationsBackward);
+            }
+        }
 
         function createOrUpdateIssue(taskTree, relations, relationsBackward) {
             if (taskTree.children.length < 1) {
@@ -822,19 +905,18 @@
                     if (task.hasOwnProperty("description")) {
                         issue.issue.description = task.description;
                     }
+                    if (task.children.length == 0) {
+                        if (task.hasOwnProperty("start")) {
+                            issue.issue.start_date = (new Date(task.start)).format("yyyy-MM-dd");
+                        }
 
-                    if (task.hasOwnProperty("start")) {
-                        issue.issue.start_date = (new Date(task.start)).format("yyyy-MM-dd");
-                    }
-
-                    if (task.hasOwnProperty("end")) {
-                        issue.issue.due_date = (new Date(task.end)).format("yyyy-MM-dd");
+                        if (task.hasOwnProperty("end")) {
+                            issue.issue.due_date = (new Date(task.end)).format("yyyy-MM-dd");
+                        }
                     }
 
                     if (task.hasOwnProperty("parent_id") && task.level > 1) {
                         issue.issue.parent_issue_id = task.parent_id;
-                    } else {
-                        issue.issue.parent_issue_id = "";
                     }
 
                     if (task.hasOwnProperty("status")) {
