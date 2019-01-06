@@ -517,7 +517,7 @@
             });
         }
 
-        function ajaxCreateRelation(server, key, issueId, relation) {
+        function ajaxCreateRelation(server, key, issueId, relation, relationQueue) {
             $.ajax({
                 type: 'POST',
                 url: proxy + server + '/issues/' + issueId + "/relations.json" + "?key=" + key,
@@ -526,6 +526,7 @@
                 contentType: "application/json; charset=utf-8",
                 success: function (data) {
                     console.log('SUCCESS create relation: ', data);
+                    handleRelations(relationQueue);
                 },
                 error: function (data) {
                     console.log('ERROR create relation: ', data);
@@ -753,14 +754,12 @@
 
                             if (created) {
                                 if (relId > 0) {
-                                    ajaxDeleteAndCreateRelation(server, key, relId, precedeId, {
-                                        "relation": r
-                                    });
-                                } else {
-                                    ajaxCreateRelation(server, key, precedeId, {
-                                        "relation": r
-                                    });
+                                    ajaxDeleteRelation(server, key, relId);
                                 }
+                                if (relations[precedeId] == undefined) {
+                                    relations[precedeId] = [];
+                                }
+                                relations[precedeId].push(r);
                             }
                         } else {
                             //else push to object and create after task is created
@@ -814,9 +813,34 @@
             return roots;
         }
 
+        function buildRelationQueue(relations) {
+            var relationQueue = [];
+            for (var precedeId in relations) {
+                for (var i = 0; i < relations[precedeId].length; i++) {
+                    relationQueue.push({
+                        "precedeId": precedeId,
+                        "relation": {"relation": relations[precedeId][i]}
+                    });
+                }
+            }
+            return relationQueue;
+        }
+
+        function handleRelations(relationQueue) {
+            if (relationQueue.length == 0) {
+                return;
+            }
+            var relation = relationQueue.shift();
+            console.log("relation: ", relation);
+
+            ajaxCreateRelation(server, key, relation.precedeId, relation.relation, relationQueue);
+        }
+
         function handleTask(taskQueue, relations, relationsBackward) {
             taskQueue.shift();
             if (taskQueue.length == 0) {
+                var relationQueue = buildRelationQueue(relations);
+                handleRelations(relationQueue);
                 return;
             }
             var task = taskQueue[0];
