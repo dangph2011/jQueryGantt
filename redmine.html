@@ -220,7 +220,7 @@
                         if (issue.hasOwnProperty("assigned_to")) {
                             // for (var j = 0; j < userToRole[issue.assigned_to.id].length; j++) {
                             var assig = {};
-                            assig.id = "tmp_" + new Date().getTime() + "_" + i + j;
+                            assig.id = "tmp_" + new Date().getTime() + "_" + i;
                             assig.resourceId = issue.assigned_to.id;
                             assig.roleId = 1;
                             task.assigs.push(assig);
