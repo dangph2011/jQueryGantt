@@ -89,7 +89,7 @@
 
         var proxy = 'https://cors-anywhere.herokuapp.com/';
         var server = "http://159.65.9.28/redmine";
-        var projectIdentifier = 7;
+        var projectIdentifier = 8;
         var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
 
         $(document).ajaxStop(function () {
@@ -401,54 +401,42 @@
                 relationsBackward[newId] = [];
                 for (var i = 0; i < relationsBackward[oldId].length; i++) {
                     var precedeId = relationsBackward[oldId][i].precede_id;
+                    //update newID in relations
                     for (var j = 0; j < relations[precedeId].length; j++) {
                         if (relations[precedeId][j].issue_to_id == oldId) {
                             relations[precedeId][j].issue_to_id = newId;
                         }
-                        if (isNaN(precedeId) || precedeId < 0) {
-                            //do nothing
-                        } else {
-                            ajaxCreateRelation(server, key, precedeId, {
-                                "relation": relations[precedeId][j]
-                            });
-                        }
                     }
 
-                    if (isNaN(precedeId) || precedeId < 0) {
-                        var rb = {
-                            "precede_id": precedeId
-                        };
-                        relationsBackward[newId].push(rb);
-                    }
+                    var rb = {
+                        "precede_id": precedeId
+                    };
+                    relationsBackward[newId].push({
+                        "precede_id": precedeId
+                    });
                 }
-                // relationsBackward[oldId] = undefined;
+                relationsBackward[oldId] = undefined;
             }
 
             if (relations[oldId] != undefined) {
                 relations[newId] = [];
                 for (var i = 0; i < relations[oldId].length; i++) {
                     var issueToId = relations[oldId][i].issue_to_id;
-                    if (isNaN(issueToId) || issueToId < 0) {
-                        for (var j = 0; j < relationsBackward[issueToId].length; j++) {
-                            if (relationsBackward[issueToId][j].precede_id == oldId) {
-                                relationsBackward[issueToId][j].precede_id = newId;
-                            }
+                    //update newID in relationsBackward
+                    for (var j = 0; j < relationsBackward[issueToId].length; j++) {
+                        if (relationsBackward[issueToId][j].precede_id == oldId) {
+                            relationsBackward[issueToId][j].precede_id = newId;
                         }
-
-                        var r = {
-                            "issue_to_id": relations[oldId][i].issue_to_id,
-                            "delay": relations[oldId][i].delay,
-                            "relation_type": PRECEDES
-                        };
-
-                        relations[newId].push(r);
-                    } else {
-                        ajaxCreateRelation(server, key, newId, {
-                            "relation": relations[oldId][i]
-                        });
                     }
+
+                    var r = {
+                        "issue_to_id": relations[oldId][i].issue_to_id,
+                        "delay": relations[oldId][i].delay,
+                        "relation_type": PRECEDES
+                    };
+                    relations[newId].push(r);
                 }
-                // relations[oldId] = undefined;
+                relations[oldId] = undefined;
             }
         }
 
@@ -816,11 +804,15 @@
         function buildRelationQueue(relations) {
             var relationQueue = [];
             for (var precedeId in relations) {
-                for (var i = 0; i < relations[precedeId].length; i++) {
-                    relationQueue.push({
-                        "precedeId": precedeId,
-                        "relation": {"relation": relations[precedeId][i]}
-                    });
+                if (relations[precedeId] != undefined) {
+                    for (var i = 0; i < relations[precedeId].length; i++) {
+                        relationQueue.push({
+                            "precedeId": precedeId,
+                            "relation": {
+                                "relation": relations[precedeId][i]
+                            }
+                        });
+                    }
                 }
             }
             return relationQueue;
@@ -999,7 +991,8 @@
                     "endIsMilestone": false,
                     "collapsed": false,
                     "assigs": [],
-                    "hasChild": true
+                    "hasChild": true,
+                    "relations": []
                 },
                 {
                     "id": -3,
@@ -1022,7 +1015,8 @@
                     "endIsMilestone": false,
                     "collapsed": false,
                     "assigs": [],
-                    "hasChild": false
+                    "hasChild": false,
+                    "relations": []
                 },
                 {
                     "id": -4,
@@ -1045,7 +1039,8 @@
                     "endIsMilestone": false,
                     "collapsed": false,
                     "assigs": [],
-                    "hasChild": false
+                    "hasChild": false,
+                    "relations": []
                 },
                 {
                     "id": -5,
@@ -1068,7 +1063,8 @@
                     "endIsMilestone": false,
                     "collapsed": false,
                     "assigs": [],
-                    "hasChild": true
+                    "hasChild": true,
+                    "relations": []
                 },
                 {
                     "id": -6,
@@ -1091,7 +1087,8 @@
                     "endIsMilestone": false,
                     "collapsed": false,
                     "assigs": [],
-                    "hasChild": false
+                    "hasChild": false,
+                    "relations": []
                 }, {
                     "id": -7,
                     "name": "test on ie",
@@ -1113,7 +1110,8 @@
                     "endIsMilestone": false,
                     "collapsed": false,
                     "assigs": [],
-                    "hasChild": false
+                    "hasChild": false,
+                    "relations": []
                 }
             ];
             return tasks;
