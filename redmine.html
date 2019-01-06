@@ -94,6 +94,7 @@
 
         $(document).ajaxStop(function () {
             console.log("stopppppp");
+            loadProject(ge);
             document.getElementById("saveOnServer").disabled = false;
         });
 
@@ -121,10 +122,10 @@
 
             // if (!project.canWrite)
             //     $(".ganttButtonBar button.requireWrite").attr("disabled", "true");
+            loadProject(ge);
+        });
 
-            // ge.loadProject(project);
-            // ge.checkpoint(); //empty the undo stack
-
+        function loadProject(ge) {
             //hardcode server and project identifier
             var projectPath = server + "/projects/" + projectIdentifier + ".json?callback=?";
 
@@ -289,7 +290,7 @@
             $.ajaxSetup({
                 global: true
             });
-        });
+        }
 
         function getTaskPosition(taskId, tasks) {
             for (var i = 0; i < tasks.length; i++) {
@@ -595,115 +596,6 @@
             //create or update issue
             handleTask(taskQueue, relations, relationsBackward);
             // createOrUpdateIssue(taskTree[0], relations, relationsBackward);
-
-            //create and update (deleting before creating) relation
-
-
-            // for (var i = 1; i < prj.tasks.length; i++) {
-            //     var task = prj.tasks[i];
-            //     var issue = {};
-            //     issue.issue = {};
-            //     if (task.hasOwnProperty("id")) {
-            //         issue.issue.id = task.id;
-            //     }
-            //     if (task.hasOwnProperty("name")) {
-            //         issue.issue.subject = task.name;
-            //     }
-            //     if (task.hasOwnProperty("progress")) {
-            //         issue.issue.done_ratio = task.progress;
-            //     }
-            //     if (task.hasOwnProperty("description")) {
-            //         issue.issue.description = task.description;
-            //     }
-            //     if (task.hasOwnProperty("start")) {
-            //         issue.issue.start_date = (new Date(task.start)).format("yyyy-MM-dd");
-            //     }
-
-            //     if (task.hasOwnProperty("parent_id") && task.level > 1) {
-            //         issue.issue.parent_issue_id = task.parent_id;
-            //     }
-
-            //     if (task.hasOwnProperty("end")) {
-            //         issue.issue.due_date = (new Date(task.end)).format("yyyy-MM-dd");
-            //     }
-
-            //     if (task.hasOwnProperty("status")) {
-            //         issue.issue.status_id = task.status;
-            //     }
-
-            //     // var issueCreated = issue.issue.id.includes("tmp");
-            //     // var issueCreated = isNaN(issue.issue.id);
-
-            //     if (task.hasOwnProperty("assigs")) {
-            //         //issue - issue : 1 - 1.
-            //         //get only the first user
-            //         //assign only one user
-            //         if (task.assigs[0] != null) {
-            //             issue.issue.assigned_to_id = parseInt(task.assigs[0].resourceId, 10);
-            //         }
-            //     }
-
-            //     // if (task.hasOwnProperty("customFields")) {
-            //     //     issue.issue.custom_fields = task.customFields;
-            //     // }
-
-
-
-            //     // console.log("issue: ", issue);
-            //     // continue;
-
-            //     issue.issue.project_id = projectIdentifier;
-
-            //     if (isNaN(issue.issue.parent_issue_id)) {
-            //         taskChild.push(issue);
-            //         continue;
-            //     }
-
-            //     if (isNaN(issue.issue.id)) {
-            //         ajaxCreateIssue(server, key, issue);
-            //         if (task.hasOwnProperty("depends") && task.depends != "") {
-            //             createRelate(server, key, task);
-            //         }
-            //     } else {
-            //         updateIssue(server, key, issue);
-
-            //         //Recreate related issue
-            //         //delete all in issue relation
-            //         if (task.hasOwnProperty("depends") && task.depends != "") {
-            //             var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
-            //             var t = task;
-            //             $.getJSON(issueUrl, function (resp) {
-            //                 if (resp.issue.hasOwnProperty("relations")) {
-            //                     if (resp.issue.relations.length > 0) {
-            //                         for (var j = 0; j < resp.issue.relations.length; j++) {
-            //                             var relationId = resp.issue.relations[j].id;
-            //                             ajaxDeleteAndCreateRelation(server, key, relationId, t);
-            //                         }
-            //                     }
-            //                 }
-            //                 // var res = task.depends.split(",");
-            //                 // for (var j = 0; j < res.length; j++) {
-            //                 //     var [parent_id, delay] = res[j].split(":");
-            //                 //     delay = (delay == undefined) ? 0 : delay;
-            //                 //     var relation = initRelation(task.id, PRECEDES, delay);
-            //                 //     ajaxCreateRelation(server, key, parent_id, relation);
-            //                 // }
-            //             });
-            //         } else {
-            //             var issueUrl = server + "/issues/" + issue.issue.id + ".json" + "?include=relations&callback=?";
-            //             $.getJSON(issueUrl, function (resp) {
-            //                 if (resp.issue.hasOwnProperty("relations")) {
-            //                     if (resp.issue.relations.length > 0) {
-            //                         for (var j = 0; j < resp.issue.relations.length; j++) {
-            //                             var relationId = resp.issue.relations[j].id;
-            //                             ajaxDeleteRelation(server, key, relationId);
-            //                         }
-            //                     }
-            //                 }
-            //             });
-            //         }
-            //     }
-            // }
         }
 
         function buildRelation(tasks) {
