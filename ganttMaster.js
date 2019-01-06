@@ -511,7 +511,7 @@ GanttMaster.prototype.loadTasks = function (tasks, selectedRow) {
     var task = tasks[i];
     if (!(task instanceof Task)) {
       var t = factory.build(task.id, task.name, task.code, task.level, task.start, task.duration, task.collapsed, 
-          task.progress, task.description, task.status, task.assigns, task.customFields);
+          task.progress, task.description, task.status, task.assigs, task.customFields);
       for (var key in task) {
         if (key != "end" && key != "start")
           t[key] = task[key]; //copy all properties

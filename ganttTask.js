@@ -79,7 +79,7 @@ function Task(id, name, code, level, start, end, duration, collapsed, progress, 
   this.assigs = assigs;
   this.customFields = customFields;
 
-  watch(this, ["name", "progress", "description", "level", "status", "start", "end", "duration", "assigns", "customFields"], function(){
+  watch(this, ["name", "progress", "description", "level", "status", "start", "end", "duration", "assigs", "customFields"], function(){
     console.log("watch: ",  this.getString() + " Time:" + Date.now());
     this.change = true;
   });
