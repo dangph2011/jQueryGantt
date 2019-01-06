@@ -1738,25 +1738,51 @@ GanttMaster.prototype.setHoursOn = function(startWorkingHour,endWorkingHour,date
 };
 
 GanttMaster.prototype.filter = function(assignee, status) {
+  if (assignee == 0 && status == 0) {
+    return;
+  }
   if (!this.filterMode) {
     this.tasksStored = this.tasks;
     this.filterMode = true;
     this.setFilterMode(this.filterMode);
   }
   var tasksFilter = [];
-
-  for (var i = 0; i < this.tasksStored.length; i++) {
-    var t = this.tasksStored[i];
-    if (t.status == status || (t.assigs[0] != null &&  t.assigs[0].resourceId == assignee)) {
-      t.canWrite = false;
-      t.canAdd = false;
-      t.canDelete = false;
-      t.canAddIssue = false;
-      tasksFilter.push(t);
+  if (assignee > 0 && status > 0) {
+    for (var i = 0; i < this.tasksStored.length; i++) {
+      var t = this.tasksStored[i];
+      if (t.status == status && (t.assigs[0] != null && t.assigs[0].resourceId == assignee)) {
+        t.canWrite = false;
+        t.canAdd = false;
+        t.canDelete = false;
+        t.canAddIssue = false;
+        tasksFilter.push(t);
+      }
+    }
+  } else if (assignee > 0) {
+    for (var i = 0; i < this.tasksStored.length; i++) {
+      var t = this.tasksStored[i];
+      if (t.assigs[0] != null && t.assigs[0].resourceId == assignee) {
+        t.canWrite = false;
+        t.canAdd = false;
+        t.canDelete = false;
+        t.canAddIssue = false;
+        tasksFilter.push(t);
+      }
+    }
+  } else {
+    for (var i = 0; i < this.tasksStored.length; i++) {
+      var t = this.tasksStored[i];
+      if (t.status == status) {
+        t.canWrite = false;
+        t.canAdd = false;
+        t.canDelete = false;
+        t.canAddIssue = false;
+        tasksFilter.push(t);
+      }
     }
   }
 
-  console.log("tsk filter: ", tasksFilter);
+  console.log("task filter: ", tasksFilter);
 
   this.loadTasks(tasksFilter, 1);
   this.redraw();
@@ -1797,10 +1823,12 @@ GanttMaster.prototype.setFilterMode = function(flag) {
   }
 }
 
-GanttMaster.prototype.clearFilter = function() {
-  this.filterMode = false;
-  this.setFilterMode(this.filterMode);
-  this.loadTasks(this.tasksStored);
-  this.redraw();
+GanttMaster.prototype.clearFilter = function () {
+  if (this.filterMode) {
+    this.filterMode = false;
+    this.setFilterMode(this.filterMode);
+    this.loadTasks(this.tasksStored);
+    this.redraw();
+  }
   // return this.tasksStored;
 }

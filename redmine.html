@@ -1363,8 +1363,24 @@
         }
 
         function setFillter() {
-            var filter = $.JST.createFromTemplate({}, "TASK_FILTER");
-            var ndo = createModalPopup(400, 500).append(filter);
+            var filterPopup = $.JST.createFromTemplate({status: ge.status, assignee: ge.resources}, "TASK_FILTER");
+           //bind apply event
+           filterPopup.find("#applyFilter").click(function () {
+                var assigneeId = filterPopup.find("[name=assigneeId]").val();
+                assigneeId = assigneeId == "" ? "0" : assigneeId;
+                var statusId = filterPopup.find("[name=statusId]").val();
+                statusId = statusId == "" ? "0" : statusId;
+                ge.filter(assigneeId, statusId);       
+                closeBlackPopup();
+            });
+
+            //bind clear event
+           filterPopup.find("#clearFilter").click(function () {
+                ge.clearFilter();       
+                closeBlackPopup();
+            });
+
+            var ndo = createModalPopup(400, 500).append(filterPopup);
         }
 
         function initializeHistoryManagement() {
@@ -1760,7 +1776,7 @@
       </tr>
     </table>
 
-    <div style="text-align: right; padding-top: 20px"><button id="resSaveButton" class="button big">Save</button></div>
+    <div style="text-align: right; padding-top: 20px"><button id="resSaveButton" class="button first">Save</button></div>
   </div>
   -->
         </div>
@@ -1789,18 +1805,33 @@
         </div>
 
         <div class="__template__" type="TASK_FILTER">
-            <h2>Assignments</h2>
-            <table cellspacing="1" cellpadding="0" width="100%" id="assigsTable">
-                <tr>
-                    <th style="width:100px;">name</th>
-                    <th style="width:70px;">Role</th>
-                    <th style="width:30px;">est.wklg.</th>
-                    <th style="width:30px;" id="addAssig"><span class="teamworkIcon" style="cursor: pointer">+</span></th>
-                </tr>
-            </table>
+            <!-- 
+                <h2>Filter</h2>
+                <table cellspacing="1" cellpadding="0" width="100%" id="filterTable">
+                    <tr>
+                        <td class="gdfCell" style="text-align:center">
+                            Status
+                        </td>
+                        <td class="gdfCell" style="text-align:center">
+                            <select type="select" name="statusId" class="formElements"></select>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="gdfCell" style="text-align:center">
+                            Assignee
+                        </td>
+                        <td class="gdfCell" style="text-align:center">
+                            <select type="select" name="assigneeId" class="formElements"></select>
+                        </td>
+                    </tr>
+                </table>
+                <div style="text-align: right; padding-top: 20px">
+                    <button id="applyFilter" class="button first">Apply</button>
+                    <button id="clearFilter" class="button big">Clear</button>
+                </div>
+            -->
         </div>
-
-
 
         <div class="__template__" type="RESOURCE_ROW">
             <!--
@@ -1846,6 +1877,30 @@
                 div.attr("status", res.id);
                 div.attr("title", res.name);
                 statusChanged.append(div);
+            }
+        });
+
+        $.JST.loadDecorator("TASK_FILTER", function (resTable, resourceStatus) {
+            var statusEl = resTable.find("[name=statusId]");
+            var opt = $("<option>");
+            statusEl.append(opt);
+            for (var i = 0; i < resourceStatus.status.length; i++) {
+                var res = resourceStatus.status[i];
+                opt = $("<option>");
+                opt.val(res.id).html(res.name);
+                opt.attr("class", "taskStatus");
+                opt.attr("status", res.id);
+                statusEl.append(opt);
+            }
+
+            var assigneeEl = resTable.find("[name=assigneeId]");
+            var opt = $("<option>");
+            assigneeEl.append(opt);
+            for (var i = 0; i < resourceStatus.assignee.length; i++) {
+                var res = resourceStatus.assignee[i];
+                opt = $("<option>");
+                opt.val(res.id).html(res.name);
+                assigneeEl.append(opt);
             }
         });
 
