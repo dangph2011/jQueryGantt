@@ -1804,7 +1804,7 @@ GanttMaster.prototype.setFilterMode = function(flag) {
     canMoveUpDown: false,
     canSeePopEdit: false,
     canSeeFullEdit: false,
-    canSeeDep: false,
+    canSeeDep: true,
     canSeeCriticalPath: false,
     canAddIssue: false,
     cannotCloseTaskIfIssueOpen: false
