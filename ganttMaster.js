@@ -27,6 +27,7 @@ function GanttMaster() {
   this.deletedTaskIds = [];
   this.links = [];
   this.status = [];
+  this.user;
 
   this.editor; //element for editor
   this.gantt; //element for gantt
@@ -1784,7 +1785,7 @@ GanttMaster.prototype.filter = function(assignee, status) {
 
   console.log("task filter: ", tasksFilter);
 
-  this.loadTasks(tasksFilter, 1);
+  this.loadTasks(tasksFilter, 0);
   this.redraw();
   // return tasksFilter;
 }
@@ -1831,4 +1832,30 @@ GanttMaster.prototype.clearFilter = function () {
     this.redraw();
   }
   // return this.tasksStored;
+}
+
+GanttMaster.prototype.setUser = function(userId, userName, userRoles) {
+  this.user = {"id": userId, "name": userName, "roles": userRoles};
+}
+
+GanttMaster.prototype.isManager = function () {
+  if (this.user.hasOwnProperty("roles")) {
+    for (var i = 0; i < this.user.roles.length; i++) {
+      if (this.user.roles[i].name == "Manager") {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+GanttMaster.prototype.isDeveloper = function () {
+  if (this.user.hasOwnProperty("roles")) {
+    for (var i = 0; i < this.user.roles.length; i++) {
+      if (this.user.roles[i].name == "Developer") {
+        return true;
+      }
+    }
+  }
+  return false;
 }

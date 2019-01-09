@@ -91,6 +91,7 @@
         var server = "http://159.65.9.28/redmine";
         var projectIdentifier = 8;
         var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
+        var userId = 8;
 
         $(document).ajaxStop(function () {
             console.log("stopppppp");
@@ -123,6 +124,7 @@
             // if (!project.canWrite)
             //     $(".ganttButtonBar button.requireWrite").attr("disabled", "true");
             loadProject(ge);
+            console.log("Ge: ", ge);
         });
 
         function loadProject(ge) {
@@ -156,6 +158,10 @@
                     for (var i = 0; i < memberships[0].memberships.length; i++) {
                         if (memberships[0].memberships[i].hasOwnProperty("user")) {
                             project.resources.push(memberships[0].memberships[i].user);
+                            if (memberships[0].memberships[i].user.id == userId) {
+                                ge.setUser(userId, memberships[0].memberships[i].user.name, memberships[0].memberships[
+                                    i].roles);
+                            }
                             // userToRole[memberships[0].memberships[i].user.id] = memberships[0].memberships[i].roles;
                         } else if (memberships[0].memberships[i].hasOwnProperty("group")) {
                             project.resources.push(memberships[0].memberships[i].group);
@@ -1363,20 +1369,23 @@
         }
 
         function setFillter() {
-            var filterPopup = $.JST.createFromTemplate({status: ge.status, assignee: ge.resources}, "TASK_FILTER");
-           //bind apply event
-           filterPopup.find("#applyFilter").click(function () {
+            var filterPopup = $.JST.createFromTemplate({
+                status: ge.status,
+                assignee: ge.resources
+            }, "TASK_FILTER");
+            //bind apply event
+            filterPopup.find("#applyFilter").click(function () {
                 var assigneeId = filterPopup.find("[name=assigneeId]").val();
                 assigneeId = assigneeId == "" ? "0" : assigneeId;
                 var statusId = filterPopup.find("[name=statusId]").val();
                 statusId = statusId == "" ? "0" : statusId;
-                ge.filter(assigneeId, statusId);       
+                ge.filter(assigneeId, statusId);
                 closeBlackPopup();
             });
 
             //bind clear event
-           filterPopup.find("#clearFilter").click(function () {
-                ge.clearFilter();       
+            filterPopup.find("#clearFilter").click(function () {
+                ge.clearFilter();
                 closeBlackPopup();
             });
 
@@ -1852,9 +1861,12 @@
         });
 
         $.JST.loadDecorator("SELECTED_STATUS", function (statusSelected, task) {
-            // var resEl = statusTr.find("[name=statusId]");
+            var manager = task.task.master.isManager();
             for (var i = 0; i < task.task.master.status.length; i++) {
                 var res = task.task.master.status[i];
+                if (!manager && (res.name == "Closed" || res.name == "Rejected")) {
+                   continue;
+                }
                 opt = $("<option>");
                 opt.val(res.id).html(res.name);
                 opt.attr("class", "taskStatus");
@@ -1866,12 +1878,13 @@
         });
 
         $.JST.loadDecorator("CHANGE_STATUS", function (statusChanged, task) {
-            // var resEl = statusTr.find("[name=statusId]");
-            // var div = $("<div>");
-            // div.attr("class", "taskStatusBox");
-            // statusChanged.append(div);
+            var manager = task.master.isManager();
+            
             for (var i = 0; i < task.master.status.length; i++) {
                 var res = task.master.status[i];
+                if (!manager && (res.name == "Closed" || res.name == "Rejected")) {
+                   continue;
+                }
                 div = $("<div>");
                 div.attr("class", "taskStatus cvcColorSquare");
                 div.attr("status", res.id);
