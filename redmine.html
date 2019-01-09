@@ -96,12 +96,14 @@
         $(document).ajaxStop(function () {
             console.log("stopppppp");
             loadProject(ge);
-            document.getElementById("saveOnServer").disabled = false;
+            // document.getElementById("saveOnServer").disabled = false;
+            ge.disableSaveButton(false);
         });
 
         $(document).ajaxStart(function () {
             console.log("startttttt");
-            document.getElementById("saveOnServer").disabled = true;
+            // document.getElementById("saveOnServer").disabled = true;
+            ge.disableSaveButton(true);
         });
 
         $(function () {

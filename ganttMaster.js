@@ -1743,6 +1743,7 @@ GanttMaster.prototype.filter = function(assignee, status) {
     return;
   }
   if (!this.filterMode) {
+    ge.disableSaveButton(true);
     this.tasksStored = this.tasks;
     this.filterMode = true;
     this.setFilterMode(this.filterMode);
@@ -1789,6 +1790,7 @@ GanttMaster.prototype.disableTask = function(task) {
   task.canAdd = false;
   task.canDelete = false;
   task.canAddIssue = false;
+  // task.depends = "";
 }
 
 GanttMaster.prototype.setFilterMode = function(flag) {
@@ -1827,6 +1829,7 @@ GanttMaster.prototype.setFilterMode = function(flag) {
 
 GanttMaster.prototype.clearFilter = function () {
   if (this.filterMode) {
+    ge.disableSaveButton(false);
     this.filterMode = false;
     this.setFilterMode(this.filterMode);
     this.loadTasks(this.tasksStored);
@@ -1859,4 +1862,8 @@ GanttMaster.prototype.isDeveloper = function () {
     }
   }
   return false;
+}
+
+GanttMaster.prototype.disableSaveButton = function(flag) {
+  this.workSpace.find("#saveOnServer").attr("disabled", flag);
 }
