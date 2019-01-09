@@ -1383,6 +1383,22 @@ GanttMaster.prototype.endTransaction = function () {
   return ret;
 };
 
+GanttMaster.prototype.endFilter = function (){
+  if (!this.__currentTransaction) {
+    return true;
+  }
+
+  var oldTasks = JSON.parse(this.__currentTransaction.snapshot);
+  this.loadTasks(oldTasks.tasks, oldTasks.selectedRow);
+  this.redraw();
+
+  //reset transaction
+  this.__currentTransaction = undefined;
+
+  //[expand]
+  this.editor.refreshExpandStatus(this.currentTask);
+}
+
 // inhibit undo-redo
 GanttMaster.prototype.checkpoint = function () {
   //console.debug("GanttMaster.prototype.checkpoint");
@@ -1744,30 +1760,32 @@ GanttMaster.prototype.filter = function(assignee, status) {
   }
   if (!this.filterMode) {
     ge.disableSaveButton(true);
-    this.tasksStored = this.tasks;
+    this.beginTransaction();
     this.filterMode = true;
     this.setFilterMode(this.filterMode);
-  }
+  } 
+  var oldTasks = JSON.parse(this.__currentTransaction.snapshot).tasks;
+
   var tasksFilter = [];
   if (assignee > 0 && status > 0) {
-    for (var i = 0; i < this.tasksStored.length; i++) {
-      var t = this.tasksStored[i];
+    for (var i = 0; i < oldTasks.length; i++) {
+      var t = oldTasks[i];
       if (t.status == status && (t.assigs[0] != null && t.assigs[0].resourceId == assignee)) {
         this.disableTask(t);
         tasksFilter.push(t);
       }
     }
   } else if (assignee > 0) {
-    for (var i = 0; i < this.tasksStored.length; i++) {
-      var t = this.tasksStored[i];
+    for (var i = 0; i < oldTasks.length; i++) {
+      var t = oldTasks[i];
       if (t.assigs[0] != null && t.assigs[0].resourceId == assignee) {
         this.disableTask(t);
         tasksFilter.push(t);
       }
     }
   } else {
-    for (var i = 0; i < this.tasksStored.length; i++) {
-      var t = this.tasksStored[i];
+    for (var i = 0; i < oldTasks.length; i++) {
+      var t = oldTasks[i];
       if (t.status == status) {
         this.disableTask(t);
         tasksFilter.push(t);
@@ -1776,10 +1794,9 @@ GanttMaster.prototype.filter = function(assignee, status) {
   }
 
   //add superior task
-  var t = this.tasksStored[0];
+  var t = oldTasks[0];
   this.disableTask(t);
   tasksFilter.unshift(t);
-  console.log("task filter: ", tasksFilter);
   this.loadTasks(tasksFilter, 0);
   this.redraw();
   // return tasksFilter;
@@ -1790,7 +1807,6 @@ GanttMaster.prototype.disableTask = function(task) {
   task.canAdd = false;
   task.canDelete = false;
   task.canAddIssue = false;
-  // task.depends = "";
 }
 
 GanttMaster.prototype.setFilterMode = function(flag) {
@@ -1803,9 +1819,9 @@ GanttMaster.prototype.setFilterMode = function(flag) {
     canInOutdent: false,
     canMoveUpDown: false,
     canSeePopEdit: false,
-    canSeeFullEdit: false,
+    canSeeFullEdit: true,
     canSeeDep: true,
-    canSeeCriticalPath: false,
+    canSeeCriticalPath: true,
     canAddIssue: false,
     cannotCloseTaskIfIssueOpen: false
     };
@@ -1832,10 +1848,8 @@ GanttMaster.prototype.clearFilter = function () {
     ge.disableSaveButton(false);
     this.filterMode = false;
     this.setFilterMode(this.filterMode);
-    this.loadTasks(this.tasksStored);
-    this.redraw();
+    this.endFilter();
   }
-  // return this.tasksStored;
 }
 
 GanttMaster.prototype.setUser = function(userId, userName, userRoles) {
