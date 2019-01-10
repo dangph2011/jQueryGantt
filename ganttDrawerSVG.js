@@ -304,11 +304,6 @@ Ganttalendar.prototype.drawTask = function (task) {
         //bring to top
 		//alert('mouser enter');//hailh
 		
-	
-
-		
-		
-		console.log(task);
         var el = $(this);
         if (!self.linkOnProgress) {
           $("[class*=linkHandleSVG]").hide();
