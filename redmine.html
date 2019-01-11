@@ -448,6 +448,7 @@
                     handleTask(taskQueue, relations, relationsBackward);
                 },
                 error: function (data) {
+                    alert("ERROR create issue : " + data.status + " " + data.statusText + "\n" + data.responseText);
                     console.log('ERROR create issue: ', data);
                 },
             });
@@ -516,7 +517,7 @@
                     handleTask(taskQueue, relations, relationsBackward);
                 },
                 error: function (data) {
-                    alert("Error update issue id " + issue.issue.id + ": " + data.status + " " + data.statusText);
+                    alert("Error update issue id " + issue.issue.id + ": " + data.status + " " + data.statusText + "\n" + data.responseText);
                     console.log('ERROR Update issue id: ', data);
                 },
             });
