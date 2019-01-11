@@ -461,17 +461,8 @@
                     handleTask(taskQueue, relations, relationsBackward);
                 },
                 error: function (data) {
-                    if (data.status == 422) {
-                        var issueUrl = server + "/issues/" + issue.issue.id + ".json" +
-                            "?include=relations&callback=?";
-                        $.getJSON(issueUrl, function (resp) {
-                            console.log('Reupdate issue id: ', issue.issue.id);
-                            ajaxUpdateIssue(server, key, issue, taskQueue, relations,
-                                relationsBackward);
-                        });
-                    } else {
-                        console.log('ERROR Update issue id: ', data);
-                    }
+                    alert("Error update issue id " + issue.issue.id + ": " + data.status + " " + data.statusText);
+                    console.log('ERROR Update issue id: ', data);
                 },
             });
         }
