@@ -86,12 +86,13 @@
     <script type="text/javascript">
         var ge;
         var PRECEDES = "precedes";
+        var COLOR_STATUS = "color_status";
 
         var proxy = 'https://cors-anywhere.herokuapp.com/';
         var server = "http://159.65.9.28/redmine";
         var projectIdentifier = 8;
         var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
-        var userId = 8;
+        var userId = 1;
 
         $(document).ajaxStop(function () {
             console.log("stopppppp");
@@ -108,7 +109,6 @@
 
         $(function () {
             var canWrite = true; //this is the default for test purposes
-
             // here starts gantt initialization
             ge = new GanttMaster();
             ge.set100OnClose = true;
@@ -129,6 +129,21 @@
             console.log("Ge: ", ge);
         });
 
+        function parseColorStatus(colorStatus, mapNameToIdStatus) {
+            var mapIdNameToColorStatus = [];
+            var statusToColor = colorStatus.split(",");
+            for (var i = 0; i < statusToColor.length; i++){
+                var [statusName, colorCode] = statusToColor[i].split(":");
+                if (statusName != undefined && statusName != "") {
+                    colorCode = colorCode != (undefined||"") ? colorCode : "";
+                    var name = statusName.toLowerCase();
+                    var map = {"id": mapNameToIdStatus[name],"name": name, "code": "#" + colorCode};
+                    mapIdNameToColorStatus.push(map);
+                }
+            }
+            return mapIdNameToColorStatus;
+        }
+
         function loadProject(ge) {
             //hardcode server and project identifier
             var projectPath = server + "/projects/" + projectIdentifier + ".json?callback=?";
@@ -141,13 +156,43 @@
 
             var issueStatusPath = server + "/issue_statuses.json?callback=?";
 
+            var colorStatusPath = proxy + server + "/custom_fields.json?key=" + key;
+
             $.ajaxSetup({
                 global: false
             });
 
             $.when($.getJSON(projectPath), $.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath),
-                    $.getJSON(issueStatusPath))
-                .then(function (projectRm, memberships, issues, roles, issueStatus) {
+                    $.getJSON(issueStatusPath), $.getJSON(colorStatusPath))
+                .then(function (projectRm, memberships, issues, roles, issueStatus, resColorStatus) {
+
+                    //map name to id status
+                    var mapNameToIdStatus = {};
+                    for (var i = 0; i < issueStatus[0].issue_statuses.length; i++) {
+                        mapNameToIdStatus[issueStatus[0].issue_statuses[i].name.toLowerCase()] = issueStatus[0].issue_statuses[i].id;
+                    }
+
+                    var mapIdNameToColorStatus= {};
+                    //Map Name, id to Color Status
+                    for (var i = 0; i < resColorStatus[0].custom_fields.length; i++) {
+                        if (resColorStatus[0].custom_fields[i].name.toLowerCase() == COLOR_STATUS) {
+                            var colorStatus = resColorStatus[0].custom_fields[i].default_value;
+                            var mapIdNameToColorStatus = parseColorStatus(colorStatus, mapNameToIdStatus);
+                        }
+                    }
+
+                    //apply status color in css
+                    var style = document.createElement('style');
+                    style.type = 'text/css';
+                    for (var i = 0; i < mapIdNameToColorStatus.length; i++) {
+                        var st = '.taskStatus[status="' + mapIdNameToColorStatus[i].id + '"]{background-color: ' + mapIdNameToColorStatus[i].code + ';}';
+                        var stSvg = '.colorByStatus .taskStatusSVG[status="' + mapIdNameToColorStatus[i].id + '"]{fill: ' + mapIdNameToColorStatus[i].code + ';}';
+                        style.innerHTML += st;
+                        style.innerHTML += stSvg;
+                        document.head.appendChild(style);
+                    }
+
+                    console.log("style: ", style);
 
                     var project = {};
 
@@ -172,7 +217,7 @@
                     }
 
                     //reflect status
-                    project.status = issueStatus[0].issue_statuses;
+                    project.status = mapIdNameToColorStatus;
 
                     //reflect role
                     // project.roles = roles[0].roles;
@@ -1861,13 +1906,11 @@
             var manager = task.task.master.isManager();
             for (var i = 0; i < task.task.master.status.length; i++) {
                 var res = task.task.master.status[i];
-                if (!manager && (res.name == "Closed" || res.name == "Rejected")) {
+                if (!manager && (res.name.toLowerCase() == "Closed".toLowerCase() || res.name.toLowerCase() == "Rejected".toLowerCase())) {
                    continue;
                 }
                 opt = $("<option>");
                 opt.val(res.id).html(res.name);
-                opt.attr("class", "taskStatus");
-                opt.attr("status", res.id);
                 if (task.task.status == res.id)
                     opt.attr("selected", "true");
                 statusSelected.append(opt);
@@ -1879,7 +1922,7 @@
             
             for (var i = 0; i < task.master.status.length; i++) {
                 var res = task.master.status[i];
-                if (!manager && (res.name == "Closed" || res.name == "Rejected")) {
+                if (!manager && (res.name.toLowerCase() == "Closed".toLowerCase() || res.name.toLowerCase() == "Rejected".toLowerCase())) {
                    continue;
                 }
                 div = $("<div>");
