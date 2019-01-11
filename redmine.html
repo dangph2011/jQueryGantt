@@ -820,14 +820,13 @@
                     }
                 }
 
-                if (task.hasOwnProperty("customFields")) {
-                    issue.issue.custom_fields = task.customFields;
-                }
-
                 issue.issue.project_id = projectIdentifier;
                 if (isNaN(issue.issue.id) || issue.issue.id < 0) {
                     ajaxCreateIssue(server, key, issue, taskQueue, relations, relationsBackward);
                 } else {
+                    if (task.hasOwnProperty("customFields")) {
+                        issue.issue.custom_fields = task.customFields;
+                    }
                     ajaxUpdateIssue(server, key, issue, taskQueue, relations, relationsBackward);
                 }
             } else {
