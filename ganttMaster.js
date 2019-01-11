@@ -412,7 +412,7 @@ GanttMaster.prototype.addTask = function (task, row) {
   if (task.getParent())
     task.status = task.getParent().status;
   else
-    task.status = "STATUS_ACTIVE";
+    task.status = 1;
 
   var ret = task;
   if (linkLoops || !task.setPeriod(task.start, task.end)) {
