@@ -87,6 +87,7 @@
         var ge;
         var PRECEDES = "precedes";
         var COLOR_STATUS = "color_status";
+        var DEFAULT_COLOR = "#C0C0C0";
 
         var proxy = 'https://cors-anywhere.herokuapp.com/';
         var server = "http://159.65.9.28/redmine";
@@ -131,18 +132,17 @@
         });
 
         function parseColorStatus(colorStatus, mapNameToIdStatus) {
-            var mapIdNameToColorStatus = [];
+            var mapIdToColor = {};
             var statusToColor = colorStatus.split(",");
             for (var i = 0; i < statusToColor.length; i++){
                 var [statusName, colorCode] = statusToColor[i].split(":");
                 if (statusName != undefined && statusName != "") {
                     colorCode = colorCode != (undefined||"") ? colorCode : "";
                     var name = statusName.toLowerCase();
-                    var map = {"id": mapNameToIdStatus[name],"name": name, "code": "#" + colorCode};
-                    mapIdNameToColorStatus.push(map);
+                    mapIdToColor[mapNameToIdStatus[name]] = "#" + colorCode;
                 }
             }
-            return mapIdNameToColorStatus;
+            return mapIdToColor;
         }
 
         function loadProject(ge) {
@@ -167,27 +167,37 @@
                     $.getJSON(issueStatusPath), $.getJSON(colorStatusPath))
                 .then(function (projectRm, memberships, issues, roles, issueStatus, resColorStatus) {
 
+                    var listStatus = issueStatus[0].issue_statuses;
                     //map name to id status
                     var mapNameToIdStatus = {};
-                    for (var i = 0; i < issueStatus[0].issue_statuses.length; i++) {
-                        mapNameToIdStatus[issueStatus[0].issue_statuses[i].name.toLowerCase()] = issueStatus[0].issue_statuses[i].id;
+                    for (var i = 0; i < listStatus.length; i++) {
+                        mapNameToIdStatus[listStatus[i].name.toLowerCase()] = listStatus[i].id;
                     }
 
-                    var mapIdNameToColorStatus= {};
-                    //Map Name, id to Color Status
+                    var mapIdToColor= {};
+                    //Map id to Color Status
                     for (var i = 0; i < resColorStatus[0].custom_fields.length; i++) {
                         if (resColorStatus[0].custom_fields[i].name.toLowerCase() == COLOR_STATUS) {
                             var colorStatus = resColorStatus[0].custom_fields[i].default_value;
-                            var mapIdNameToColorStatus = parseColorStatus(colorStatus, mapNameToIdStatus);
+                            mapIdToColor = parseColorStatus(colorStatus, mapNameToIdStatus);
+                        }
+                    }
+
+                    //map id to name and color 
+                    for (var i = 0; i < listStatus.length; i++) {
+                        if (mapIdToColor[listStatus[i].id] != undefined) {
+                            listStatus[i].color = mapIdToColor[listStatus[i].id];
+                        } else {
+                            listStatus[i].color = DEFAULT_COLOR;
                         }
                     }
 
                     //apply status color in css
                     var style = document.createElement('style');
                     style.type = 'text/css';
-                    for (var i = 0; i < mapIdNameToColorStatus.length; i++) {
-                        var st = '.taskStatus[status="' + mapIdNameToColorStatus[i].id + '"]{background-color: ' + mapIdNameToColorStatus[i].code + ';}';
-                        var stSvg = '.colorByStatus .taskStatusSVG[status="' + mapIdNameToColorStatus[i].id + '"]{fill: ' + mapIdNameToColorStatus[i].code + ';}';
+                    for (var i = 0; i < listStatus.length; i++) {
+                        var st = '.taskStatus[status="' + listStatus[i].id + '"]{background-color: ' + listStatus[i].color + ';}';
+                        var stSvg = '.colorByStatus .taskStatusSVG[status="' + listStatus[i].id + '"]{fill: ' + listStatus[i].color + ';}';
                         style.innerHTML += st;
                         style.innerHTML += stSvg;
                         document.head.appendChild(style);
@@ -216,7 +226,8 @@
                     }
 
                     //reflect status
-                    project.status = mapIdNameToColorStatus;
+                    project.status = listStatus;
+                    // project.status = issueStatus[0].issue_statuses;
 
                     //reflect role
                     // project.roles = roles[0].roles;
