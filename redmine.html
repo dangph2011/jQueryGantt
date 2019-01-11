@@ -783,6 +783,10 @@
                     }
                 }
 
+                if (task.hasOwnProperty("customFields")) {
+                    issue.issue.custom_fields = task.customFields;
+                }
+
                 issue.issue.project_id = projectIdentifier;
                 if (isNaN(issue.issue.id) || issue.issue.id < 0) {
                     ajaxCreateIssue(server, key, issue, taskQueue, relations, relationsBackward);
@@ -1809,7 +1813,7 @@
         <div class="__template__" type="CUSTOM_FIELD_ROW">
             <!--
             <tr taskId="(#=obj.task.id#)" ctfId="(#=obj.ctf.id#)" class="ctfEditRow" >
-                <td style="width:30px;"><label for="(#=obj.ctf.name#)">(#=obj.ctf.name#):</label></td>
+                <td style="width:30px;"><label for="labelName">(#=obj.ctf.name#)</label></td>
                 <td style="width:70px;"><input type="text" name="value" value="(#=obj.ctf.value#)" style="width:100%;" class="formElements"></td>
             </tr>
             -->

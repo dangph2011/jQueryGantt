@@ -770,7 +770,7 @@ GridEditor.prototype.openFullEditor = function (task, editOnlyAssig) {
 
       //set assignments
       var cnt=0;
-	  task.assigs=[];
+	    task.assigs=[];
       taskEditor.find("tr[assId]").each(function () {
         var trAss = $(this);
         var assId = trAss.attr("assId");
@@ -823,7 +823,18 @@ GridEditor.prototype.openFullEditor = function (task, editOnlyAssig) {
         
       });
 
-     
+      //set customer filters
+      var ctfList = [];
+      taskEditor.find("tr[ctfId]").each(function () {
+        var trAss = $(this);
+        var ctfId = trAss.attr("ctfId");
+        var resName = trAss.find("[for=labelName]").text();
+        var resValue = trAss.find("[name=value]").val();
+        var ctf = {"id": ctfId, "name": resName, "value": resValue};
+        ctfList.push(ctf);
+      });
+
+      task.customFields = ctfList;
 
       //change dates
       task.setPeriod(Date.parseString(taskEditor.find("#start").val()).getTime(), Date.parseString(taskEditor.find("#end").val()).getTime() + (3600000 * 22));
