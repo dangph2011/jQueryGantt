@@ -139,7 +139,7 @@
                 if (statusName != undefined && statusName != "") {
                     colorCode = colorCode != (undefined||"") ? colorCode : "";
                     var name = statusName.toLowerCase();
-                    mapIdToColor[mapNameToIdStatus[name]] = "#" + colorCode;
+                    mapIdToColor[mapNameToIdStatus[name]] = colorCode;
                 }
             }
             return mapIdToColor;
