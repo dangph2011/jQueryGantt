@@ -1857,6 +1857,8 @@ GanttMaster.prototype.setUser = function(userId, userName, userRoles) {
 }
 
 GanttMaster.prototype.isManager = function () {
+  if (this.user == undefined)
+    return false;
   if (this.user.hasOwnProperty("roles")) {
     for (var i = 0; i < this.user.roles.length; i++) {
       if (this.user.roles[i].name == "Manager") {
@@ -1868,6 +1870,8 @@ GanttMaster.prototype.isManager = function () {
 }
 
 GanttMaster.prototype.isDeveloper = function () {
+  if (this.user == undefined)
+    return false;
   if (this.user.hasOwnProperty("roles")) {
     for (var i = 0; i < this.user.roles.length; i++) {
       if (this.user.roles[i].name == "Developer") {
