@@ -103,11 +103,11 @@
             ge.disableSaveButton(false);
         });
 
-        $(document).ajaxStart(function () {
-            console.log("startttttt");
-            // document.getElementById("saveOnServer").disabled = true;
-            ge.disableSaveButton(true);
-        });
+        // $(document).ajaxStart(function () {
+        //     console.log("startttttt");
+        //     // document.getElementById("saveOnServer").disabled = true;
+        //     ge.disableSaveButton(true);
+        // });
 
         $(function () {
             var canWrite = true; //this is the default for test purposes
@@ -349,10 +349,6 @@
                     // handle errors (some request has failed)
                     console.log("Problem: ", problem);
                 });
-
-            $.ajaxSetup({
-                global: true
-            });
         }
 
         function getTaskPosition(taskId, tasks) {
@@ -616,7 +612,10 @@
         }
 
         function saveGanttOnServer() {
-
+            ge.disableSaveButton(true);
+            $.ajaxSetup({
+                global: true
+            });
             //this is a simulation: save data to the local storage or to the textarea
             // saveInLocalStorage();
             //deleted task
