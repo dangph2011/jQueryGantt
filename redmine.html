@@ -1924,6 +1924,8 @@
                 opt.val(res.id).html(res.name);
                 if (task.task.status == res.id)
                     opt.attr("selected", "true");
+                opt.attr("class", "taskStatus");
+                opt.attr("status", res.id);
                 statusSelected.append(opt);
             }
         });
