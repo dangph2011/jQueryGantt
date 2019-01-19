@@ -253,6 +253,10 @@
                     project.tasks.push(superiorTask);
                     //store all child issue
                     var childQueue = [];
+                    var parentIssue = {};
+                    for (var i = 0; i < issues[0].issues.length; i++) {
+                        parentIssue[issues[0].issues[i].id] = true;
+                    }
                     // travel all issue 
                     for (var i = 0; i < issues[0].issues.length; i++) {
                         var task = {};
@@ -298,6 +302,10 @@
 
                         //push all child issue to childQueue
                         if (issue.hasOwnProperty("parent")) {
+                            if (!parentIssue.hasOwnProperty(issue.parent.id) || parentIssue[issue.parent.id] == false) {
+                                alert("Issue id " + issue.id + " - Cannot find parent id: " + issue.parent.id );
+                                return;
+                            }
                             task.parent_id = issue.parent.id;
                             childQueue.push(task);
                         } else {
