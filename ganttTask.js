@@ -1042,6 +1042,10 @@ Task.prototype.moveUp = function () {
   //is a parent or a brother
   if (this.master.tasks[newRow].level == this.level) {
     ret = true;
+
+    //exchange position
+    this.exchangePosition(this.master.tasks[row], this.master.tasks[newRow]);
+
     //compute descendant
     var descNumber = 0;
     for (var i = row + 1; i < this.master.tasks.length; i++) {
@@ -1091,6 +1095,9 @@ Task.prototype.moveDown = function () {
   //is brother
   if (this.master.tasks[newRow] && this.master.tasks[newRow].level == this.level) {
     ret = true;
+
+    //exchange position
+    this.exchangePosition(this.master.tasks[row], this.master.tasks[newRow]);
     //find last desc
     for (newRow = newRow + 1; newRow < this.master.tasks.length; newRow++) {
       if (this.master.tasks[newRow].level <= this.level)
@@ -1127,6 +1134,11 @@ Task.prototype.moveDown = function () {
   return ret;
 };
 
+Task.prototype.exchangePosition=function(task1, task2){
+  var p = task1.position.valueOf();
+  task1.position = task2.position.valueOf();
+  task2.position = p;
+}
 
 Task.prototype.canStatusBeChangedTo=function(newStatus) {
   //lo stato corrente è sempre ok
