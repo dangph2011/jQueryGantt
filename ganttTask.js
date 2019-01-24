@@ -924,6 +924,15 @@ Task.prototype.indent = function () {
     this.level--;
 
     var oldLevel = this.level;
+
+    //recalculate sibling position before indent
+    var sibling = this.getParent().getChildren();
+    for (var i = 0; i < sibling.length; i++) {
+      if (sibling[i].position > this.position) {
+        sibling[i].position -= 1;
+      }
+    }
+
     for (var i = row; i < this.master.tasks.length; i++) {
       var desc = this.master.tasks[i];
       if (desc.level > oldLevel || desc == this) {
@@ -952,6 +961,14 @@ Task.prototype.indent = function () {
 
       } else
         break;
+    }
+
+    //recalculate sibling position after indent
+    var sibling = this.getParent().getChildren();
+    for (var i = 0; i < sibling.length; i++) {
+      if (sibling[i].position != i+1) {
+        sibling[i].position = i+1;
+      }
     }
 
     var parent = this.getParent();
@@ -983,6 +1000,8 @@ Task.prototype.outdent = function () {
   var ret = false;
   var oldLevel = this.level;
 
+  var oldChildLength = this.getChildren().length;
+
   ret = true;
   var row = this.getRow();
   for (var i = row; i < this.master.tasks.length; i++) {
@@ -995,6 +1014,24 @@ Task.prototype.outdent = function () {
 
   var task = this;
   var chds = this.getChildren();
+
+  //recalculate child position
+  if (oldChildLength != chds.length) {
+    for (var i = 0; i < chds.length; i++) {
+      if (chds[i].position != i+1) {
+        chds[i].position == i+1;
+      }
+    }
+  }
+
+  //recalculate sibling position
+  var sibling = this.getParent().getChildren();
+  for (var i = 0; i < sibling.length; i++) {
+    if (sibling[i].position != i+1) {
+      sibling[i].position = i+1;
+    }
+  }
+  
   //remove links from me to my new children
   this.master.links = this.master.links.filter(function (link) {
     var linkExist = (link.to == task && chds.indexOf(link.from) >= 0 || link.from == task && chds.indexOf(link.to) >= 0);
