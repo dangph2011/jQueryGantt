@@ -63,6 +63,7 @@ GridEditor.prototype.fillEmptyLines = function () {
       var lastTask;
       var start = new Date().getTime();
       var level = 0;
+      var position = 0;
       //hailh
 	  /*
 	  if (master.tasks[0]) {
@@ -73,14 +74,15 @@ GridEditor.prototype.fillEmptyLines = function () {
 	  var length = master.tasks.length;
 	  if (length>0) {		  
         start = master.tasks[length-1].start;
-        level = master.tasks[length-1].level == 0 ? 1:master.tasks[length-1].level;
+        level = master.tasks[length-1].level == 0 ? 1:master.tasks[length-1].level
+        position = master.tasks[length-1].position+1;
       }
 
       //fill all empty previouses
       var cnt=0;
       emptyRow.prevAll(".emptyRow").addBack().each(function () {
         cnt++;
-        var ch = factory.build("tmp_fk" + new Date().getTime()+"_"+cnt, "", "", level, start, Date.workingPeriodResolution);
+        var ch = factory.build("tmp_fk" + new Date().getTime()+"_"+cnt, "", "", level, start, Date.workingPeriodResolution, master.initialStatus, position);
         var task = master.addTask(ch);
         lastTask = ch;
       });

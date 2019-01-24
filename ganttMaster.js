@@ -28,6 +28,7 @@ function GanttMaster() {
   this.links = [];
   this.status = [];
   this.user;
+  this.initialStatus = 1;
 
   this.editor; //element for editor
   this.gantt; //element for gantt
@@ -409,10 +410,10 @@ GanttMaster.prototype.addTask = function (task, row) {
   var linkLoops = !this.updateLinks(task);
 
   //set the status according to parent
-  if (task.getParent())
-    task.status = task.getParent().status;
-  else
-    task.status = 1;
+  // if (task.getParent())
+  //   task.status = task.getParent().status;
+  // else
+  //   task.status = 1;
 
   var ret = task;
   if (linkLoops || !task.setPeriod(task.start, task.end)) {
@@ -511,8 +512,8 @@ GanttMaster.prototype.loadTasks = function (tasks, selectedRow) {
   for (var i = 0; i < tasks.length; i++) {
     var task = tasks[i];
     if (!(task instanceof Task)) {
-      var t = factory.build(task.id, task.name, task.code, task.level, task.start, task.duration, task.position, task.collapsed, 
-          task.progress, task.description, task.status, task.assigs, task.customFields);
+      var t = factory.build(task.id, task.name, task.code, task.level, task.start, task.duration, task.status, task.position, task.collapsed, 
+          task.progress, task.description, task.assigs, task.customFields);
       for (var key in task) {
         if (key != "end" && key != "start")
           t[key] = task[key]; //copy all properties
@@ -1077,7 +1078,7 @@ GanttMaster.prototype.addBelowCurrentTask = function () {
         return;
 
 
-    ch = factory.build("tmp_" + new Date().getTime(), "", "", self.currentTask.level+ (addNewBrother ?0:1), self.currentTask.start, 1);
+    ch = factory.build("tmp_" + new Date().getTime(), "", "", self.currentTask.level+ (addNewBrother ?0:1), self.currentTask.start, 1, self.initialStatus);
     row = self.currentTask.getRow() + 1;
 
     if (row>0) {
@@ -1113,7 +1114,7 @@ GanttMaster.prototype.addAboveCurrentTask = function () {
     if (self.currentTask.level <= 0)
       return;
 
-    ch = factory.build("tmp_" + new Date().getTime(), "", "", self.currentTask.level, self.currentTask.start, 1);
+    ch = factory.build("tmp_" + new Date().getTime(), "", "", self.currentTask.level, self.currentTask.start, 1, self.initialStatus);
     row = self.currentTask.getRow();
 
     if (row > 0) {
@@ -1912,5 +1913,9 @@ GanttMaster.prototype.isChangedTask = function () {
 }
 
 GanttMaster.prototype.isDeletedTask = function () {
-  return ge.deletedTaskIds.length;
+  return this.deletedTaskIds.length;
+}
+
+GanttMaster.prototype.setInitialStatus = function (id) {
+  this.initialStatus = id;
 }

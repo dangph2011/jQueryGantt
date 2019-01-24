@@ -30,16 +30,15 @@ function TaskFactory() {
   /**
    * Build a new Task
    */
-  this.build = function (id, name, code, level, start, duration, position, collapsed = false, progress = 0, description = "", status = 1, assigs = [], customFields = []) {
+  this.build = function (id, name, code, level, start, duration, status, position, collapsed = false, progress = 0, description = "", assigs = [], customFields = []) {
     // Set at beginning of day
     var adjusted_start = computeStart(start);
     var calculated_end = computeEndByDuration(adjusted_start, duration);
-    return new Task(id, name, code, level, adjusted_start, calculated_end, duration, position, collapsed, progress, description, status, assigs, customFields);
+    return new Task(id, name, code, level, adjusted_start, calculated_end, duration, status, position, collapsed, progress, description, assigs, customFields);
   };
-
 }
 
-function Task(id, name, code, level, start, end, duration, position, collapsed, progress, description, status, assigs, customFields) {
+function Task(id, name, code, level, start, end, duration, status, position, collapsed, progress, description, assigs, customFields) {
   this.id = id;
   this.name = name;
   this.progress = progress;
@@ -81,7 +80,7 @@ function Task(id, name, code, level, start, end, duration, position, collapsed, 
   this.position = position;
 
   watch(this, ["name", "progress", "description", "level", "status", "start", "end", "duration", "assigs", "customFields", "position"], function(){
-    // console.log("watch: ",  [this.id, this.name, this.description, this.status, this.level, this.start, this.end].join(",") + " Time:" + Date.now());
+    // console.log("watch: ",  [this.id, this.name, this.description, this.status, this.level, this.position, this.duration, this.start, this.end].join(",") + " Time:" + Date.now());
     this.change = true;
   });
 }

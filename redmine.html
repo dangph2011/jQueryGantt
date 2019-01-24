@@ -88,6 +88,7 @@
         var PRECEDES = "precedes";
         var COLOR_STATUS = "color_status";
         var DEFAULT_COLOR = "#C0C0C0";
+        var INITIAL_STATUS = "initial_status";
 
         var proxy = 'https://cors-anywhere.herokuapp.com/';
         var server = "http://159.65.9.28/redmine";
@@ -164,15 +165,15 @@
 
             var issueStatusPath = server + "/issue_statuses.json?callback=?";
 
-            var colorStatusPath = proxy + server + "/custom_fields.json?key=" + key;
+            var customFieldPath = proxy + server + "/custom_fields.json?key=" + key;
 
             $.ajaxSetup({
                 global: false
             });
 
             $.when($.getJSON(projectPath), $.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath),
-                    $.getJSON(issueStatusPath), $.getJSON(colorStatusPath))
-                .then(function (projectRm, memberships, issues, roles, issueStatus, resColorStatus) {
+                    $.getJSON(issueStatusPath), $.getJSON(customFieldPath))
+                .then(function (projectRm, memberships, issues, roles, issueStatus, resCustomField) {
 
                     var listStatus = issueStatus[0].issue_statuses;
                     //map name to id status
@@ -183,10 +184,14 @@
 
                     var mapIdToColor= {};
                     //Map id to Color Status
-                    for (var i = 0; i < resColorStatus[0].custom_fields.length; i++) {
-                        if (resColorStatus[0].custom_fields[i].name.toLowerCase() == COLOR_STATUS) {
-                            var colorStatus = resColorStatus[0].custom_fields[i].default_value;
+                    for (var i = 0; i < resCustomField[0].custom_fields.length; i++) {
+                        if (resCustomField[0].custom_fields[i].name.toLowerCase() == COLOR_STATUS) {
+                            var colorStatus = resCustomField[0].custom_fields[i].default_value;
                             mapIdToColor = parseColorStatus(colorStatus, mapNameToIdStatus);
+                        } 
+
+                        if (resCustomField[0].custom_fields[i].name.toLowerCase() == INITIAL_STATUS) {
+                            ge.setInitialStatus(parseInt(resCustomField[0].custom_fields[i].default_value));
                         }
                     }
 
