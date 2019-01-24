@@ -688,6 +688,13 @@ GridEditor.prototype.openFullEditor = function (task, editOnlyAssig) {
     assigsTable.append(assigRow);
   }
 
+  //create virtual assigment row if task does not assigned
+  if (task.assigs.length == 0) {
+    var assigsTable = taskEditor.find("#assigsTable");
+    var assigRow = $.JST.createFromTemplate({task: task, assig: {id: "tmp_" + new Date().getTime()}}, "ASSIGNMENT_ROW");
+    assigsTable.append(assigRow);
+  }
+
   ////make status field
   var taskStatusEditor = taskEditor.find("#taskSelectedStatus");
   var taskSelectedStatus = $.JST.createFromTemplate({task: task}, "SELECTED_STATUS");
@@ -741,13 +748,13 @@ GridEditor.prototype.openFullEditor = function (task, editOnlyAssig) {
 
     //bind add assignment
     var cnt=0;
-    taskEditor.find("#addAssig").click(function () {
-      cnt++;
-      var assigsTable = taskEditor.find("#assigsTable");
-      var assigRow = $.JST.createFromTemplate({task: task, assig: {id: "tmp_" + new Date().getTime()+"_"+cnt}}, "ASSIGNMENT_ROW");
-      assigsTable.append(assigRow);
-      $("#bwinPopupd").scrollTop(10000);
-    }).click();
+    // taskEditor.find("#addAssig").click(function () {
+    //   cnt++;
+    //   var assigsTable = taskEditor.find("#assigsTable");
+    //   var assigRow = $.JST.createFromTemplate({task: task, assig: {id: "tmp_" + new Date().getTime()+"_"+cnt}}, "ASSIGNMENT_ROW");
+    //   assigsTable.append(assigRow);
+    //   $("#bwinPopupd").scrollTop(10000);
+    // }).click();
 
     //save task
     taskEditor.bind("saveFullEditor.gantt",function () {

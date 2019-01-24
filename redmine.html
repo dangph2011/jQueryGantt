@@ -1845,10 +1845,9 @@
     <h2>Assignments</h2>
   <table  cellspacing="1" cellpadding="0" width="100%" id="assigsTable">
     <tr>
-      <th style="width:100px;">name</th>
-      <th style="width:70px;">Role</th>
-      <th style="width:30px;">est.wklg.</th>
-      <th style="width:30px;" id="addAssig"><span class="teamworkIcon" style="cursor: pointer">+</span></th>
+      <th style="width:80px;">name</th>
+      <th style="width:80px;">Role</th>
+      <th style="width:40px;">est.wklg.</th>
     </tr>
   </table>
 
@@ -1877,10 +1876,9 @@
         <div class="__template__" type="ASSIGNMENT_ROW">
             <!--
   <tr taskId="(#=obj.task.id#)" assId="(#=obj.assig.id#)" class="assigEditRow" >
-    <td ><select name="resourceId"  class="formElements" (#=obj.assig.id.indexOf("tmp_")==0?"":"disabled"#) ></select></td>
-    <td ><select type="select" name="roleId"  class="formElements"></select></td>
-    <td ><input type="text" name="effort" value="(#=getMillisInHoursMinutes(obj.assig.effort)#)" size="5" class="formElements"></td>
-    <td align="center"><span class="teamworkIcon delAssig del" style="cursor: pointer">d</span></td>
+    <td style="text-align: center;"><select name="resourceId"  class="formElements" (#=obj.assig.id.indexOf("tmp_")==0?"":"disabled"#) ></select></td>
+    <td style="text-align: center;"><select type="select" name="roleId"  class="formElements"></select></td>
+    <td style="text-align: center;"><input type="text" name="effort" value="(#=getMillisInHoursMinutes(obj.assig.effort)#)" size="5" class="formElements"></td>
   </tr>
   -->
         </div>
@@ -2053,13 +2051,13 @@
                 roleEl.append(optr);
             }
 
-            if (taskAssig.task.master.permissions.canWrite && taskAssig.task.canWrite) {
-                assigTr.find(".delAssig").click(function () {
-                    var tr = $(this).closest("[assId]").fadeOut(200, function () {
-                        $(this).remove()
-                    });
-                });
-            }
+            // if (taskAssig.task.master.permissions.canWrite && taskAssig.task.canWrite) {
+            //     assigTr.find(".delAssig").click(function () {
+            //         var tr = $(this).closest("[assId]").fadeOut(200, function () {
+            //             $(this).remove()
+            //         });
+            //     });
+            // }
 
         });
 
