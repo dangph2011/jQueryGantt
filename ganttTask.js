@@ -964,12 +964,7 @@ Task.prototype.indent = function () {
     }
 
     //recalculate sibling position after indent
-    var sibling = this.getParent().getChildren();
-    for (var i = 0; i < sibling.length; i++) {
-      if (sibling[i].position != i+1) {
-        sibling[i].position = i+1;
-      }
-    }
+    this.recalculateSiblingPosition();
 
     var parent = this.getParent();
     // set start date to parent' start if no deps
@@ -1025,12 +1020,7 @@ Task.prototype.outdent = function () {
   }
 
   //recalculate sibling position
-  var sibling = this.getParent().getChildren();
-  for (var i = 0; i < sibling.length; i++) {
-    if (sibling[i].position != i+1) {
-      sibling[i].position = i+1;
-    }
-  }
+  this.recalculateSiblingPosition();
   
   //remove links from me to my new children
   this.master.links = this.master.links.filter(function (link) {
@@ -1175,6 +1165,15 @@ Task.prototype.exchangePosition=function(task1, task2){
   var p = task1.position.valueOf();
   task1.position = task2.position.valueOf();
   task2.position = p;
+}
+
+Task.prototype.recalculateSiblingPosition = function () {
+  var sibling = this.getParent().getChildren();
+  for (var i = 0; i < sibling.length; i++) {
+    if (sibling[i].position != i+1) {
+      sibling[i].position = i+1;
+    }
+  }
 }
 
 Task.prototype.canStatusBeChangedTo=function(newStatus) {
