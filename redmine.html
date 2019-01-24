@@ -881,6 +881,10 @@
                     issue.issue.status_id = task.status;
                 }
 
+                if (task.hasOwnProperty("position")) {
+                    issue.issue.position = task.position;
+                }
+
                 if (task.hasOwnProperty("assigs")) {
                     //issue - issue : 1 - 1.
                     //get only the first user
