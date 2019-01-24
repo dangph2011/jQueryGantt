@@ -1087,6 +1087,10 @@ GanttMaster.prototype.addBelowCurrentTask = function () {
         task.rowElement.click();
         task.rowElement.find("[name=name]").focus();
       }
+
+      //recalculate sibling position
+      task.recalculateSiblingPosition();
+
       self.endTransaction();
     }
   }
@@ -1119,6 +1123,10 @@ GanttMaster.prototype.addAboveCurrentTask = function () {
         task.rowElement.click();
         task.rowElement.find("[name=name]").focus();
       }
+
+      //recalculate sibling position
+      task.recalculateSiblingPosition();
+
       self.endTransaction();
     }
   }
