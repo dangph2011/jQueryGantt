@@ -583,10 +583,11 @@
                 dataType: 'text',
                 contentType: "application/json; charset=utf-8",
                 success: function (data) {
-                    console.log('SUCCESS: ', data);
+                    console.log('SUCCESS Delete issue id: ', issueId);
                 },
                 error: function (data) {
-                    console.log('ERROR: ', data);
+                    alert("Error delete issue id " + issueId + ": " + data.status + " " + data.statusText + "\n" + data.responseText);
+                    console.log('ERROR Delete issue: ', data);
                 },
             });
         }
@@ -619,6 +620,7 @@
                     handleRelations(relationQueue);
                 },
                 error: function (data) {
+                    alert("ERROR create relation : " + data.status + " " + data.statusText + "\n" + data.responseText);
                     console.log('ERROR create relation: ', data);
                 },
             });
@@ -635,6 +637,7 @@
                     console.log('SUCCESS delete relation o: ', relationId + " " + data);
                 },
                 error: function (data) {
+                    alert("ERROR delete relation " + relationId + " : " + data.status + " " + data.statusText + "\n" + data.responseText);
                     console.log('ERROR delete relation: ', data);
                 },
             });
