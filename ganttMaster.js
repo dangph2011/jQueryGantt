@@ -1172,6 +1172,14 @@ GanttMaster.prototype.deleteCurrentTask = function (taskId) {
       task.rowElement.click();
       task.rowElement.find("[name=name]").focus();
     }
+
+    var sibling = par.getChildren();
+    for (var i = 0; i < sibling.length; i++) {
+      if (sibling[i].position != i+1) {
+        sibling[i].position = i+1;
+      }
+    }
+
     self.endTransaction();
   }
 };
