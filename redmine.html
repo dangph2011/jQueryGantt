@@ -96,7 +96,7 @@
         var userId = 8;
 
         window.onbeforeunload = function () {
-            if (checkChanged(ge.tasks)) {
+            if (ge.isChangedTask() || ge.isDeletedTask()) {
                 return "Leaving this page will reset the tasks?";
             } else {
                 return;
@@ -137,15 +137,6 @@
             loadProject(ge);
             console.log("Ge: ", ge);
         });
-
-        function checkChanged(tasks) {
-            for (var i = 1; i < tasks.length; i++) {
-                if (tasks[i].change == true) {
-                    return true;
-                }
-            }
-            return false;
-        }
 
         function parseColorStatus(colorStatus, mapNameToIdStatus) {
             var mapIdToColor = {};
@@ -683,6 +674,10 @@
                     //deleted Task
                     deleteIssues(server, key, ge.deletedTaskIds);
                 } else {
+                    ge.disableSaveButton(false);
+                    $.ajaxSetup({
+                        global: false
+                    });
                     return;
                 }
             }

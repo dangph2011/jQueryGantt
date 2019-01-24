@@ -1893,3 +1893,16 @@ GanttMaster.prototype.isDeveloper = function () {
 GanttMaster.prototype.disableSaveButton = function(flag) {
   this.workSpace.find("#saveOnServer").attr("disabled", flag);
 }
+
+GanttMaster.prototype.isChangedTask = function () {
+  for (var i = 1; i < this.tasks.length; i++) {
+    if (this.tasks[i].change == true) {
+      return true;
+    }
+  }
+  return false;
+}
+
+GanttMaster.prototype.isDeletedTask = function () {
+  return ge.deletedTaskIds.length;
+}
