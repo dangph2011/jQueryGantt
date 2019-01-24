@@ -386,7 +386,7 @@
                     ge.checkpoint(); //empty the undo stack
 
                 }).fail(function (problem) {
-                    // handle errors (some request has failed)
+                    alert("error when getting project :" + problem.status + " " + problem.statusText + "\n" + problem.responseText);
                     console.log("Problem: ", problem);
                 });
         }
