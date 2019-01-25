@@ -151,9 +151,9 @@ Task.prototype.setPeriod = function (start, end) {
   var newDuration = recomputeDuration(start, end);
 
   //if are equals do nothing and return true
-  if ( start == originalPeriod.start && end == originalPeriod.end && newDuration == originalPeriod.duration) {
-    return true;
-  }
+  // if ( start == originalPeriod.start && end == originalPeriod.end && newDuration == originalPeriod.duration) {
+  //   return true;
+  // }
 
   // if (newDuration == this.duration) { // is shift
   //   return this.moveTo(start, false,true);
