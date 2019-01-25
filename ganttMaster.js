@@ -1771,8 +1771,8 @@ GanttMaster.prototype.setHoursOn = function(startWorkingHour,endWorkingHour,date
   millisInWorkingDay=endWorkingHour-startWorkingHour;
 };
 
-GanttMaster.prototype.filter = function(assignee, status) {
-  if (assignee == 0 && status == 0) {
+GanttMaster.prototype.filter = function(assignee, status, startFrom, startTo, endFrom, endTo) {
+  if ((assignee | status | startFrom | startTo | endFrom | endTo) == 0) {
     return;
   }
   if (!this.filterMode) {
@@ -1784,32 +1784,36 @@ GanttMaster.prototype.filter = function(assignee, status) {
   var oldTasks = JSON.parse(this.__currentTransaction.snapshot).tasks;
 
   var tasksFilter = [];
-  if (assignee > 0 && status > 0) {
-    for (var i = 0; i < oldTasks.length; i++) {
-      var t = oldTasks[i];
-      if (t.status == status && (t.assigs[0] != null && t.assigs[0].resourceId == assignee)) {
-        this.disableTask(t);
-        tasksFilter.push(t);
-      }
-    }
-  } else if (assignee > 0) {
-    for (var i = 0; i < oldTasks.length; i++) {
-      var t = oldTasks[i];
-      if (t.assigs[0] != null && t.assigs[0].resourceId == assignee) {
-        this.disableTask(t);
-        tasksFilter.push(t);
-      }
-    }
-  } else {
-    for (var i = 0; i < oldTasks.length; i++) {
-      var t = oldTasks[i];
-      if (t.status == status) {
-        this.disableTask(t);
-        tasksFilter.push(t);
-      }
-    }
-  }
 
+  for (var i = 0; i < oldTasks.length; i++) {
+    var t = oldTasks[i];
+    if (assignee && (t.assigs[0] == null || t.assigs[0].resourceId != assignee)) {
+      continue;
+    }
+
+    if (status && (t.status != status)) {
+      continue;
+    }
+
+    if (startFrom && (t.start < startFrom)) {
+      continue;
+    }
+
+    if (startTo && (t.start > startTo + 86400000 - 1)) {
+      continue;
+    }
+
+    if (endFrom && (t.end < endFrom)) {
+      continue;
+    }
+
+    if (endTo && (t.end > endTo + 86400000 - 1)) {
+      continue;
+    }
+
+    this.disableTask(t);
+    tasksFilter.push(t);
+  }
   //add superior task
   var t = oldTasks[0];
   this.disableTask(t);

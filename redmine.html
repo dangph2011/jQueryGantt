@@ -1492,14 +1492,39 @@
                 status: ge.status,
                 assignee: ge.resources
             }, "TASK_FILTER");
+            
             //bind apply event
             filterPopup.find("#applyFilter").click(function () {
                 var assigneeId = filterPopup.find("[name=assigneeId]").val();
-                assigneeId = assigneeId == "" ? "0" : assigneeId;
+                assigneeId = assigneeId == "" ? 0 : parseInt(assigneeId);
                 var statusId = filterPopup.find("[name=statusId]").val();
-                statusId = statusId == "" ? "0" : statusId;
-                ge.filter(assigneeId, statusId);
+                statusId = statusId == "" ? 0 : parseInt(statusId);
+
+                var startFrom = getTimeValue(Date.parseString(filterPopup.find("#start_from").val()));
+                var startTo = getTimeValue(Date.parseString(filterPopup.find("#start_to").val()));
+                var endFrom = getTimeValue(Date.parseString(filterPopup.find("#end_from").val()));
+                var endTo = getTimeValue(Date.parseString(filterPopup.find("#end_to").val()));
+
+                ge.filter(assigneeId, statusId, startFrom, startTo, endFrom, endTo);
                 closeBlackPopup();
+            });
+
+                    //bind dateField on dates, duration
+            filterPopup.find("#start_from,#start_to,#end_from,#end_to").click(function () {
+                var input = $(this);
+                if (input.is("[entrytype=DATE]")) {
+                    input.dateField({
+                        inputField: input,
+                        minDate:self.minAllowedDate,
+                        maxDate:self.maxAllowedDate,
+                        callback:   function (d) {$(this).blur();}
+                    });
+                }
+            }).blur(function () {
+                    var inp = $(this);
+                    if (!inp.validateField()) {
+                        alert("Invalid date format");
+                    }
             });
 
             //bind clear event
@@ -1509,6 +1534,12 @@
             });
 
             var ndo = createModalPopup(400, 230).append(filterPopup);
+        }
+
+        function getTimeValue(value){
+            if (value != null)
+                return value.getTime();
+            return 0;
         }
 
         function initializeHistoryManagement() {
@@ -1935,22 +1966,45 @@
                 <h2>Filter</h2>
                 <table cellspacing="1" cellpadding="0" width="100%" id="filterTable">
                     <tr>
-                        <td class="gdfCell" style="text-align:center">
+                        <td class="gdfCell" style="text-align:left">
                             Status
                         </td>
-                        <td class="gdfCell" style="text-align:center">
+                        <td class="gdfCell" style="text-align:left">
                             <select type="select" name="statusId" class="formElements"></select>
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="gdfCell" style="text-align:center">
+                        <td class="gdfCell" style="text-align:left">
                             Assignee
                         </td>
-                        <td class="gdfCell" style="text-align:center">
+                        <td class="gdfCell" style="text-align:left">
                             <select type="select" name="assigneeId" class="formElements"></select>
                         </td>
                     </tr>
+
+                    <tr>
+                        <td class="gdfCell" style="text-align:left">
+                            Start Date
+                        </td>
+                        <td class="gdfCell" style="text-align:left">
+                            <input type="text" name="start_from" id="start_from" size="10" class="formElements dateField validated date" autocomplete="off" maxlength="255" value="" oldvalue="1" entrytype="DATE">
+                            &nbsp&nbsp to &nbsp&nbsp 
+                            <input type="text" name="start_to" id="start_to" size="10" class="formElements dateField validated date" autocomplete="off" maxlength="255" value="" oldvalue="1" entrytype="DATE">
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="gdfCell" style="text-align:left">
+                            End Date
+                        </td>
+                        <td class="gdfCell" style="text-align:left">
+                            <input type="text" name="end_from" id="end_from" size="10" class="formElements dateField validated date" autocomplete="off" maxlength="255" value="" oldvalue="1" entrytype="DATE">
+                            &nbsp&nbsp to &nbsp&nbsp 
+                            <input type="text" name="end_to" id="end_to" size="10" class="formElements dateField validated date" autocomplete="off" maxlength="255" value="" oldvalue="1" entrytype="DATE">
+                        </td>
+                    </tr>
+                    
                 </table>
                 <div style="text-align: right; padding-top: 20px">
                     <button id="applyFilter" class="button first">Apply</button>
