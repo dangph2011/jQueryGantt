@@ -1013,7 +1013,7 @@ Task.prototype.outdent = function () {
   if (oldChildLength != chds.length) {
     for (var i = 0; i < chds.length; i++) {
       if (chds[i].position != i+1) {
-        chds[i].position == i+1;
+        chds[i].position = i+1;
       }
     }
   }
