@@ -1773,8 +1773,8 @@ GanttMaster.prototype.setHoursOn = function(startWorkingHour,endWorkingHour,date
   millisInWorkingDay=endWorkingHour-startWorkingHour;
 };
 
-GanttMaster.prototype.filter = function(assignee, status, startFrom, startTo, endFrom, endTo) {
-  if ((assignee | status | startFrom | startTo | endFrom | endTo) == 0) {
+GanttMaster.prototype.filter = function(assignee, status, startFrom, startTo, endFrom, endTo, tracker) {
+  if ((assignee | status | startFrom | startTo | endFrom | endTo | tracker) == 0) {
     return;
   }
   if (!this.filterMode) {
@@ -1794,6 +1794,10 @@ GanttMaster.prototype.filter = function(assignee, status, startFrom, startTo, en
     }
 
     if (status && (t.status != status)) {
+      continue;
+    }
+
+    if (tracker && (t.tracker != tracker)) {
       continue;
     }
 

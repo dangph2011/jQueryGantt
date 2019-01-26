@@ -1500,22 +1500,27 @@
         function setFillter() {
             var filterPopup = $.JST.createFromTemplate({
                 status: ge.status,
-                assignee: ge.resources
+                assignee: ge.resources,
+                trackers: ge.trackers
             }, "TASK_FILTER");
             
             //bind apply event
             filterPopup.find("#applyFilter").click(function () {
                 var assigneeId = filterPopup.find("[name=assigneeId]").val();
                 assigneeId = assigneeId == "" ? 0 : parseInt(assigneeId);
+
                 var statusId = filterPopup.find("[name=statusId]").val();
                 statusId = statusId == "" ? 0 : parseInt(statusId);
+
+                var trackerId = filterPopup.find("[name=trackerId]").val();
+                trackerId = trackerId == "" ? 0 : parseInt(trackerId);
 
                 var startFrom = getTimeValue(Date.parseString(filterPopup.find("#start_from").val()));
                 var startTo = getTimeValue(Date.parseString(filterPopup.find("#start_to").val()));
                 var endFrom = getTimeValue(Date.parseString(filterPopup.find("#end_from").val()));
                 var endTo = getTimeValue(Date.parseString(filterPopup.find("#end_to").val()));
 
-                ge.filter(assigneeId, statusId, startFrom, startTo, endFrom, endTo);
+                ge.filter(assigneeId, statusId, startFrom, startTo, endFrom, endTo, trackerId);
                 closeBlackPopup();
             });
 
@@ -1991,6 +1996,15 @@
                 <table cellspacing="1" cellpadding="0" width="100%" id="filterTable">
                     <tr>
                         <td class="gdfCell" style="text-align:left">
+                            Tracker
+                        </td>
+                        <td class="gdfCell" style="text-align:left">
+                            <select type="select" name="trackerId" class="formElements"></select>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="gdfCell" style="text-align:left">
                             Status
                         </td>
                         <td class="gdfCell" style="text-align:left">
@@ -2120,6 +2134,16 @@
                 opt = $("<option>");
                 opt.val(res.id).html(res.name);
                 assigneeEl.append(opt);
+            }
+
+            var trackerEl = resTable.find("[name=trackerId]");
+            var opt = $("<option>");
+            trackerEl.append(opt);
+            for (var i = 0; i < resourceStatus.trackers.length; i++) {
+                var res = resourceStatus.trackers[i];
+                opt = $("<option>");
+                opt.val(res.id).html(res.name);
+                trackerEl.append(opt);
             }
         });
 
