@@ -397,7 +397,7 @@
                     ge.checkpoint(); //empty the undo stack
 
                 }).fail(function (problem) {
-                    alert("error when getting project :" + problem.status + " " + problem.statusText + "\n" + problem.responseText);
+                    alert("error when getting project: " + problem.status + " " + problem.statusText);
                     console.log("Problem: ", problem);
                 });
         }
@@ -1757,6 +1757,7 @@
       <th class="gdfColHeader" style="width:25px;"></th>
       <th class="gdfColHeader gdfResizable" style="width:100px;">#</th>
       <th class="gdfColHeader gdfResizable" style="width:300px;">name</th>
+      <th class="gdfColHeader gdfResizable" style="width:80px;">tracker</th>
       <th class="gdfColHeader"  align="center" style="width:17px;" title="Start date is a milestone."><span class="teamworkIcon" style="font-size: 8px;">^</span></th>
       <th class="gdfColHeader gdfResizable" style="width:80px;">start</th>
       <th class="gdfColHeader"  align="center" style="width:17px;" title="End date is a milestone."><span class="teamworkIcon" style="font-size: 8px;">^</span></th>
@@ -1781,6 +1782,7 @@
       <div class="exp-controller" align="center"></div>
       <input type="text" name="name" value="(#=obj.name#)" placeholder="name">
     </td>
+    <td class="gdfCell"><select id="trackerCol" name="trackerCol" onchange="$(this).attr('tracker',$(this).val());"> </select></td>
     <td class="gdfCell" align="center"><input type="checkbox" name="startIsMilestone"></td>
     <td class="gdfCell"><input type="text" name="start"  value="" class="date"></td>
     <td class="gdfCell" align="center"><input type="checkbox" name="endIsMilestone"></td>
@@ -1798,6 +1800,7 @@
   <tr class="taskEditRow emptyRow" >
     <th class="gdfCell" align="right"></th>
     <td class="gdfCell noClip" align="center"></td>
+    <td class="gdfCell"></td>
     <td class="gdfCell"></td>
     <td class="gdfCell"></td>
     <td class="gdfCell"></td>

@@ -64,6 +64,7 @@ GridEditor.prototype.fillEmptyLines = function () {
       var start = new Date().getTime();
       var level = 0;
       var position = 0;
+      var tracker = master.trackers[0].id;
       //hailh
 	  /*
 	  if (master.tasks[0]) {
@@ -82,7 +83,7 @@ GridEditor.prototype.fillEmptyLines = function () {
       var cnt=0;
       emptyRow.prevAll(".emptyRow").addBack().each(function () {
         cnt++;
-        var ch = factory.build("tmp_fk" + new Date().getTime()+"_"+cnt, "", "", level, start, Date.workingPeriodResolution, master.trackers[0].id, master.initialStatus, position);
+        var ch = factory.build("tmp_fk" + new Date().getTime()+"_"+cnt, "", "", level, start, Date.workingPeriodResolution, tracker, master.initialStatus, position);
         var task = master.addTask(ch);
         lastTask = ch;
       });
@@ -190,6 +191,16 @@ GridEditor.prototype.refreshTaskRow = function (task) {
   row.find("[name=end]").val(new Date(task.end).format()).prop("readonly",!canWrite || task.isParent() && task.master.shrinkParent).updateOldValue();
   row.find("[name=depends]").val(task.depends);
   row.find(".taskAssigs").html(task.getAssigsString());
+  var trackerEl = row.find("[name=trackerCol]");
+  trackerEl.empty();
+    for (var i = 0; i < task.master.trackers.length; i++) {
+        var res = task.master.trackers[i];
+        opt = $("<option>");
+        opt.val(res.id).html(res.name);
+        if (task.tracker == res.id)
+          opt.attr("selected", "true");
+        trackerEl.append(opt);
+    }
 
   //manage collapsed
   if (task.collapsed)
@@ -586,6 +597,16 @@ GridEditor.prototype.bindRowInputEvents = function (task, taskRow) {
     $(this).closest("tr").click();
   });
 
+  taskRow.find("[name=trackerCol]").change(function () {
+    var el = $(this);
+    var tr = el.closest("[taskid]");
+    var taskId = tr.attr("taskid");
+    var task = self.master.getTask(taskId);
+    var tracker = $(this).attr("tracker");
+    self.master.beginTransaction();
+    task.tracker = tracker;
+    self.master.endTransaction();
+  });
 
   //change status
   taskRow.find(".taskStatus").click(function () {
