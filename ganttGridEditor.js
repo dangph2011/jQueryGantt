@@ -123,8 +123,12 @@ GridEditor.prototype.addTask = function (task, row, hideIfParentCollapsed) {
        track:true
     });
 
-
-  this.bindRowEvents(task, taskRow);
+  //hardcode to not bind superior Task event
+  if (task.id == "superiorTask") {
+    this.bindRowEventsSuperiorTask(task, taskRow);
+  } else {
+    this.bindRowEvents(task, taskRow);
+  }
 
   if (typeof(row) != "number") {
     var emptyRow = this.element.find(".emptyRow:first"); //tries to fill an empty row
@@ -178,21 +182,25 @@ GridEditor.prototype.refreshTaskRow = function (task) {
   var row = task.rowElement;
 
   row.find(".taskRowIndex").html(task.getRow() + 1);
-  row.find(".indentCell").css("padding-left", task.level * 10 + 18);
   row.find("[name=name]").val(task.name);
-  row.find("[name=code]").val(task.code);
-  row.find("[status]").attr("status", task.status);
-  //hailh
+  row.find(".indentCell").css("padding-left", task.level * 10 + 18);
   row.find("[name=duration]").val(durationToString(task.duration)).prop("readonly",!canWrite || task.isParent() && task.master.shrinkParent);
   row.find("[name=progress]").val(task.progress).prop("readonly",!canWrite || task.progressByWorklog==true);
-  row.find("[name=startIsMilestone]").prop("checked", task.startIsMilestone);
   row.find("[name=start]").val(new Date(task.start).format()).updateOldValue().prop("readonly",!canWrite || task.depends || !(task.canWrite  || this.master.permissions.canWrite) ); // called on dates only because for other field is called on focus event
-  row.find("[name=endIsMilestone]").prop("checked", task.endIsMilestone);
   row.find("[name=end]").val(new Date(task.end).format()).prop("readonly",!canWrite || task.isParent() && task.master.shrinkParent).updateOldValue();
-  row.find("[name=depends]").val(task.depends);
-  row.find(".taskAssigs").html(task.getAssigsString());
-  var trackerEl = row.find("[name=trackerCol]");
-  trackerEl.empty();
+
+ //hardcode to not bind superior Task event
+  if (task.id != "superiorTask") {
+    row.find("[name=code]").val(task.code);
+    row.find("[status]").attr("status", task.status);
+    //hailh
+    row.find("[name=startIsMilestone]").prop("checked", task.startIsMilestone);
+    row.find("[name=endIsMilestone]").prop("checked", task.endIsMilestone);
+    row.find("[name=depends]").val(task.depends);
+    row.find(".taskAssigs").html(task.getAssigsString());
+    //
+    var trackerEl = row.find("[name=trackerCol]");
+    trackerEl.empty();
     for (var i = 0; i < task.master.trackers.length; i++) {
         var res = task.master.trackers[i];
         opt = $("<option>");
@@ -201,13 +209,16 @@ GridEditor.prototype.refreshTaskRow = function (task) {
           opt.attr("selected", "true");
         trackerEl.append(opt);
     }
-
+  } else {
+    row.find("[name=code]").remove();
+    row.find("[name=trackerCol]").remove();
+  }
+  
   //manage collapsed
   if (task.collapsed)
     row.addClass("collapsed");
   else
     row.removeClass("collapsed");
-
 
   //Enhancing the function to perform own operations
   this.master.element.trigger('gantt.task.afterupdate.event', task);
@@ -232,6 +243,36 @@ GridEditor.prototype.reset = function () {
   this.element.find("[taskid]").remove();
 };
 
+GridEditor.prototype.bindRowEventsSuperiorTask = function (task, taskRow) {
+  var self = this;
+  //bind row selection
+  taskRow.click(function (event) {
+    var row = $(this);
+    //console.debug("taskRow.click",row.attr("taskid"),event.target)
+    //var isSel = row.hasClass("rowSelected");
+    row.closest("table").find(".rowSelected").removeClass("rowSelected");
+    row.addClass("rowSelected");
+
+    //set current task
+    self.master.currentTask = self.master.getTask(row.attr("taskId"));
+
+    //move highlighter
+    self.master.gantt.synchHighlight();
+
+    //if offscreen scroll to element
+    var top = row.position().top;
+    if (top > self.element.parent().height()) {
+      row.offsetParent().scrollTop(top - self.element.parent().height() + 100);
+    } else if (top <= 40) {
+      row.offsetParent().scrollTop(row.offsetParent().scrollTop() - 40 + top);
+    }
+  });
+
+  taskRow.find("input").prop("readonly", true);
+  taskRow.find("input:checkbox,select,date,text").prop("disabled", true);
+  taskRow.find("[name=depends]").attr("readonly", true);
+  self.bindRowExpandEvents(task, taskRow);
+}
 
 GridEditor.prototype.bindRowEvents = function (task, taskRow) {
   var self = this;
