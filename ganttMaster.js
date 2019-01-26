@@ -29,6 +29,7 @@ function GanttMaster() {
   this.status = [];
   this.user;
   this.initialStatus = 1;
+  this.trackers = [];
 
   this.editor; //element for editor
   this.gantt; //element for gantt
@@ -445,6 +446,7 @@ GanttMaster.prototype.loadProject = function (project) {
   this.resources = project.resources;
   this.roles = project.roles;
   this.status = project.status;
+  this.trackers = project.trackers;
 
   //permissions from loaded project
   this.permissions.canWrite = project.canWrite;
@@ -512,7 +514,7 @@ GanttMaster.prototype.loadTasks = function (tasks, selectedRow, filterMode = fal
   for (var i = 0; i < tasks.length; i++) {
     var task = tasks[i];
     if (!(task instanceof Task)) {
-      var t = factory.build(task.id, task.name, task.code, task.level, task.start, task.duration, task.status, task.position, task.collapsed, 
+      var t = factory.build(task.id, task.name, task.code, task.level, task.start, task.duration, task.tracker, task.status, task.position, task.collapsed, 
           task.progress, task.description, task.assigs, task.customFields);
       for (var key in task) {
         if (key != "end" && key != "start")
@@ -1078,7 +1080,7 @@ GanttMaster.prototype.addBelowCurrentTask = function () {
         return;
 
 
-    ch = factory.build("tmp_" + new Date().getTime(), "", "", self.currentTask.level+ (addNewBrother ?0:1), self.currentTask.start, 1, self.initialStatus);
+    ch = factory.build("tmp_" + new Date().getTime(), "", "", self.currentTask.level+ (addNewBrother ?0:1), self.currentTask.start, 1, self.trackers[0].id, self.initialStatus);
     row = self.currentTask.getRow() + 1;
 
     if (row>0) {
@@ -1114,7 +1116,7 @@ GanttMaster.prototype.addAboveCurrentTask = function () {
     if (self.currentTask.level <= 0)
       return;
 
-    ch = factory.build("tmp_" + new Date().getTime(), "", "", self.currentTask.level, self.currentTask.start, 1, self.initialStatus);
+    ch = factory.build("tmp_" + new Date().getTime(), "", "", self.currentTask.level, self.currentTask.start, 1, self.trackers[0].id, self.initialStatus);
     row = self.currentTask.getRow();
 
     if (row > 0) {

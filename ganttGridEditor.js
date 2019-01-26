@@ -82,7 +82,7 @@ GridEditor.prototype.fillEmptyLines = function () {
       var cnt=0;
       emptyRow.prevAll(".emptyRow").addBack().each(function () {
         cnt++;
-        var ch = factory.build("tmp_fk" + new Date().getTime()+"_"+cnt, "", "", level, start, Date.workingPeriodResolution, master.initialStatus, position);
+        var ch = factory.build("tmp_fk" + new Date().getTime()+"_"+cnt, "", "", level, start, Date.workingPeriodResolution, master.trackers[0].id, master.initialStatus, position);
         var task = master.addTask(ch);
         lastTask = ch;
       });
@@ -697,6 +697,11 @@ GridEditor.prototype.openFullEditor = function (task, editOnlyAssig) {
     assigsTable.append(assigRow);
   }
 
+  //make tracker
+  var taskTrackerEditor = taskEditor.find("#taskSelectedTracker");
+  var taskSelectedTracker = $.JST.createFromTemplate({task: task}, "SELECTED_TRACKER");
+  taskTrackerEditor.append(taskSelectedTracker);
+
   ////make status field
   var taskStatusEditor = taskEditor.find("#taskSelectedStatus");
   var taskSelectedStatus = $.JST.createFromTemplate({task: task}, "SELECTED_STATUS");
@@ -776,6 +781,7 @@ GridEditor.prototype.openFullEditor = function (task, editOnlyAssig) {
       task.typeId = taskEditor.find("#type").val();
       task.relevance = taskEditor.find("#relevance").val();
       task.progressByWorklog= taskEditor.find("#progressByWorklog").is(":checked");
+      task.tracker = taskEditor.find("#tracker").val();
 
       //set assignments
       var cnt=0;

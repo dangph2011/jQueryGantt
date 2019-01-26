@@ -165,15 +165,17 @@
 
             var issueStatusPath = server + "/issue_statuses.json?callback=?";
 
-            var customFieldPath = proxy + server + "/custom_fields.json?key=" + key;
+            var customFieldPath = server + "/custom_fields.json?callback=?";
+
+            var trackerPath =  server + "/trackers.json?callback=?";
 
             $.ajaxSetup({
                 global: false
             });
 
             $.when($.getJSON(projectPath), $.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath),
-                    $.getJSON(issueStatusPath), $.getJSON(customFieldPath))
-                .then(function (projectRm, memberships, issues, roles, issueStatus, resCustomField) {
+                    $.getJSON(issueStatusPath), $.getJSON(customFieldPath), $.getJSON(trackerPath))
+                .then(function (projectRm, memberships, issues, roles, issueStatus, resCustomField, trackers) {
 
                     var listStatus = issueStatus[0].issue_statuses;
                     //map name to id status
@@ -237,6 +239,9 @@
                         }
                     }
 
+                    //reflect tracker
+                    project.trackers = trackers[0].trackers;
+
                     //reflect status
                     project.status = listStatus;
                     // project.status = issueStatus[0].issue_statuses;
@@ -299,6 +304,7 @@
                         task.progress = issue.done_ratio;
                         task.description = issue.description;
                         task.level = 1; //TODO: examine task.level
+                        task.tracker = issue.tracker.id;
                         task.status = issue.status.id;
                         task.canWrite = true;
                         task.start = (new Date(issue.start_date)).getTime();
@@ -882,6 +888,10 @@
 
                 if (task.hasOwnProperty("status")) {
                     issue.issue.status_id = task.status;
+                }
+
+                if (task.hasOwnProperty("tracker")) {
+                    issue.issue.tracker_id = task.tracker;
                 }
 
                 if (task.hasOwnProperty("position")) {
@@ -1829,13 +1839,19 @@
   <div class="ganttTaskEditor">
     <h2 class="taskData">Task editor</h2>
     <table  cellspacing="1" cellpadding="5" width="100%" class="taskData table" id="taskData" border="0">
-          <tr>
-        <td width="200" style="height: 80px"  valign="top">
-          <label for="code">#</label><br>
-          <input type="text" name="code" id="code" value="" size=15 class="formElements" autocomplete='off' maxlength=255 style='width:100%' oldvalue="1">
-        </td>
-        <td colspan="3" valign="top"><label for="name" class="required">name</label><br><input type="text" name="name" id="name"class="formElements" autocomplete='off' maxlength=255 style='width:100%' value="" required="true" oldvalue="1"></td>
-          </tr>
+        <tr>
+            <td width="200" style="height: 80px"  valign="top">
+            <label for="code">#</label><br>
+            <input type="text" name="code" id="code" value="" size=15 class="formElements" autocomplete='off' maxlength=255 style='width:100%' oldvalue="1">
+            </td>
+            <td colspan="3" valign="top"><label for="name" class="required">name</label><br><input type="text" name="name" id="name"class="formElements" autocomplete='off' maxlength=255 style='width:100%' value="" required="true" oldvalue="1"></td>
+        </tr>
+
+        <tr>
+            <td colspan="2" id="taskSelectedTracker">
+                <label for="tracker" class=" ">Tracker</label><br>
+            </td>
+        </tr>
 
 
       <tr class="dateRow">
@@ -1908,6 +1924,11 @@
             -->
         </div>
 
+        <div class="__template__" type="SELECTED_TRACKER">
+            <!--
+            <select id="tracker" name="tracker"> </select>
+            -->
+        </div>
 
         <div class="__template__" type="ASSIGNMENT_ROW">
             <!--
@@ -2045,6 +2066,17 @@
                 opt.attr("class", "taskStatus");
                 opt.attr("status", res.id);
                 statusSelected.append(opt);
+            }
+        });
+
+        $.JST.loadDecorator("SELECTED_TRACKER", function (trackerSelected, task) {
+            for (var i = 0; i < task.task.master.trackers.length; i++) {
+                var res = task.task.master.trackers[i];
+                opt = $("<option>");
+                opt.val(res.id).html(res.name);
+                if (task.task.tracker == res.id)
+                    opt.attr("selected", "true");
+                trackerSelected.append(opt);
             }
         });
 
