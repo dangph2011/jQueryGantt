@@ -501,7 +501,7 @@ GanttMaster.prototype.loadProject = function (project) {
 };
 
 
-GanttMaster.prototype.loadTasks = function (tasks, selectedRow) {
+GanttMaster.prototype.loadTasks = function (tasks, selectedRow, filterMode = false) {
   //console.debug("GanttMaster.prototype.loadTasks")
   //var prof=new Profiler("ganttMaster.loadTasks");
   var factory = new TaskFactory();
@@ -542,7 +542,7 @@ GanttMaster.prototype.loadTasks = function (tasks, selectedRow) {
       this.__removeAllLinks(task, false);
     }
 
-    if (!task.setPeriod(task.start, task.end)) {
+    if (!filterMode && !task.setPeriod(task.start, task.end)) {
       alert(GanttMaster.messages.GANNT_ERROR_LOADING_DATA_TASK_REMOVED + "\n" + task.name );
       //remove task from in-memory collection
       this.tasks.splice(task.getRow(), 1);
@@ -1810,7 +1810,8 @@ GanttMaster.prototype.filter = function(assignee, status, startFrom, startTo, en
     if (endTo && (t.end > endTo + 86400000 - 1)) {
       continue;
     }
-
+    //remove depends
+    t.depends = "";
     this.disableTask(t);
     tasksFilter.push(t);
   }
@@ -1818,7 +1819,7 @@ GanttMaster.prototype.filter = function(assignee, status, startFrom, startTo, en
   var t = oldTasks[0];
   this.disableTask(t);
   tasksFilter.unshift(t);
-  this.loadTasks(tasksFilter, 0);
+  this.loadTasks(tasksFilter, 0, true);
   this.redraw();
   // return tasksFilter;
 }
