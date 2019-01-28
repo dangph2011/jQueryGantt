@@ -1773,8 +1773,8 @@ GanttMaster.prototype.setHoursOn = function(startWorkingHour,endWorkingHour,date
   millisInWorkingDay=endWorkingHour-startWorkingHour;
 };
 
-GanttMaster.prototype.filter = function(assignee, status, startFrom, startTo, endFrom, endTo, tracker) {
-  if ((assignee | status | startFrom | startTo | endFrom | endTo | tracker) == 0) {
+GanttMaster.prototype.filter = function(assignee, status, startFrom, startTo, tracker) {
+  if ((assignee | status | startFrom | startTo | tracker) == 0) {
     return;
   }
   if (!this.filterMode) {
@@ -1801,21 +1801,14 @@ GanttMaster.prototype.filter = function(assignee, status, startFrom, startTo, en
       continue;
     }
 
-    if (startFrom && (t.start < startFrom)) {
+    if (startFrom && ((t.start < startFrom) || (t.end < startFrom))) {
       continue;
     }
 
-    if (startTo && (t.start > startTo + 86400000 - 1)) {
+    if (startTo && ((t.start > startTo + 86400000 - 1) || (t.end > startTo + 86400000 - 1))) {
       continue;
     }
 
-    if (endFrom && (t.end < endFrom)) {
-      continue;
-    }
-
-    if (endTo && (t.end > endTo + 86400000 - 1)) {
-      continue;
-    }
     //remove depends
     t.depends = "";
     this.disableTask(t);

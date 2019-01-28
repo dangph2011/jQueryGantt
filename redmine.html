@@ -1519,10 +1519,10 @@
 
                 var startFrom = getTimeValue(Date.parseString(filterPopup.find("#start_from").val()));
                 var startTo = getTimeValue(Date.parseString(filterPopup.find("#start_to").val()));
-                var endFrom = getTimeValue(Date.parseString(filterPopup.find("#end_from").val()));
-                var endTo = getTimeValue(Date.parseString(filterPopup.find("#end_to").val()));
+                // var endFrom = getTimeValue(Date.parseString(filterPopup.find("#end_from").val()));
+                // var endTo = getTimeValue(Date.parseString(filterPopup.find("#end_to").val()));
 
-                ge.filter(assigneeId, statusId, startFrom, startTo, endFrom, endTo, trackerId);
+                ge.filter(assigneeId, statusId, startFrom, startTo, trackerId);
                 closeBlackPopup();
             });
 
@@ -1550,7 +1550,7 @@
                 closeBlackPopup();
             });
 
-            var ndo = createModalPopup(400, 230).append(filterPopup);
+            var ndo = createModalPopup(420, 230).append(filterPopup);
         }
 
         function getTimeValue(value){
@@ -2025,23 +2025,12 @@
 
                     <tr>
                         <td class="gdfCell" style="text-align:left">
-                            Start Date
+                            From Date
                         </td>
                         <td class="gdfCell" style="text-align:left">
                             <input type="text" name="start_from" id="start_from" size="10" class="formElements dateField validated date" autocomplete="off" maxlength="255" value="" oldvalue="1" entrytype="DATE">
-                            &nbsp&nbsp to &nbsp&nbsp 
+                            &nbsp&nbsp To Date &nbsp&nbsp 
                             <input type="text" name="start_to" id="start_to" size="10" class="formElements dateField validated date" autocomplete="off" maxlength="255" value="" oldvalue="1" entrytype="DATE">
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <td class="gdfCell" style="text-align:left">
-                            End Date
-                        </td>
-                        <td class="gdfCell" style="text-align:left">
-                            <input type="text" name="end_from" id="end_from" size="10" class="formElements dateField validated date" autocomplete="off" maxlength="255" value="" oldvalue="1" entrytype="DATE">
-                            &nbsp&nbsp to &nbsp&nbsp 
-                            <input type="text" name="end_to" id="end_to" size="10" class="formElements dateField validated date" autocomplete="off" maxlength="255" value="" oldvalue="1" entrytype="DATE">
                         </td>
                     </tr>
                     
