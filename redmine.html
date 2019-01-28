@@ -89,10 +89,11 @@
         var COLOR_STATUS = "color_status";
         var DEFAULT_COLOR = "#C0C0C0";
         var INITIAL_STATUS = "initial_status";
+        var LIMIT = 100;
 
         var proxy = 'https://cors-anywhere.herokuapp.com/';
         var server = "http://159.65.9.28/redmine";
-        var projectIdentifier = 8;
+        var projectIdentifier = 1;
         var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
         var userId = 8;
 
@@ -160,7 +161,7 @@
             var membershipPath = server + "/projects/" + projectIdentifier + "/memberships.json?callback=?";
 
             var issuePath = server + "/issues.json?status_id=*&project_id=" + projectIdentifier +
-                "&include=relations&callback=?";
+                "&include=relations" + "&limit=" + LIMIT + "&callback=?";
             var rolePath = server + "/roles.json?callback=?";
 
             var issueStatusPath = server + "/issue_statuses.json?callback=?";
