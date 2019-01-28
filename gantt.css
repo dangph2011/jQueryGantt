@@ -443,6 +443,11 @@ input[readonly]{
   color: #c0c0c0;
 }
 
+.nameProject {
+  color: #000000 !important;
+  font-weight: bold !important;
+}
+
 .taskStatusBox{
   position:absolute;
   /*width:100px;*/

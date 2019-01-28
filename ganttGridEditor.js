@@ -269,6 +269,7 @@ GridEditor.prototype.bindRowEventsSuperiorTask = function (task, taskRow) {
   });
 
   taskRow.find("input").prop("readonly", true);
+  taskRow.find("[name=name]").attr("class", "nameProject");
   taskRow.find("input:checkbox,select,date,text").prop("disabled", true);
   taskRow.find("[name=depends]").attr("readonly", true);
   self.bindRowExpandEvents(task, taskRow);
