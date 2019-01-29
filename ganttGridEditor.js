@@ -198,7 +198,8 @@ GridEditor.prototype.refreshTaskRow = function (task) {
     row.find("[name=endIsMilestone]").prop("checked", task.endIsMilestone);
     row.find("[name=depends]").val(task.depends);
     row.find(".taskAssigs").html(task.getAssigsString());
-    //
+    
+    //add tracker for row
     var trackerEl = row.find("[name=trackerCol]");
     trackerEl.empty();
     for (var i = 0; i < task.master.trackers.length; i++) {
@@ -209,6 +210,25 @@ GridEditor.prototype.refreshTaskRow = function (task) {
           opt.attr("selected", "true");
         trackerEl.append(opt);
     }
+
+    //hardcode cf_1(7) for test row
+    var cf1 = row.find("[name=cf_1]");
+    for (var i = 0; i < task.customFields.length; i++) {
+      if (task.customFields[i].id == MUC_TIEU_KET_QUA_DAU_RA_ID) {
+        cf1.val(task.customFields[i].value);
+        break;
+      }
+    }
+
+    //hardcode cf_2(8) for test row
+    var cf1 = row.find("[name=cf_2]");
+    for (var i = 0; i < task.customFields.length; i++) {
+      if (task.customFields[i].id == CAP_NHAT_TIEN_DO_ID) {
+        cf1.val(task.customFields[i].value);
+        break;
+      }
+    }
+
   } else {
     row.find("[name=code]").remove();
     row.find("[name=trackerCol]").remove();
@@ -563,6 +583,21 @@ GridEditor.prototype.bindRowInputEvents = function (task, taskRow) {
         task[field]=parseFloat(el.val())||0;
         el.val(task[field]);
 
+      } else if (field == "cf_1") {
+        for (var i = 0; i < task.customFields.length; i++) {
+          if (task.customFields[i].id == MUC_TIEU_KET_QUA_DAU_RA_ID) {
+            task.customFields[i].value = el.val();
+            break;
+          }
+        }
+      
+      } else if (field == "cf_2") {
+        for (var i = 0; i < task.customFields.length; i++) {
+          if (task.customFields[i].id == CAP_NHAT_TIEN_DO_ID) {
+            task.customFields[i].value = el.val();
+            break;
+          }
+        }
       } else {
         task[field] = el.val();
       }
