@@ -587,6 +587,7 @@ GridEditor.prototype.bindRowInputEvents = function (task, taskRow) {
         for (var i = 0; i < task.customFields.length; i++) {
           if (task.customFields[i].id == MUC_TIEU_KET_QUA_DAU_RA_ID) {
             task.customFields[i].value = el.val();
+            task.change = true;
             break;
           }
         }
@@ -595,6 +596,7 @@ GridEditor.prototype.bindRowInputEvents = function (task, taskRow) {
         for (var i = 0; i < task.customFields.length; i++) {
           if (task.customFields[i].id == CAP_NHAT_TIEN_DO_ID) {
             task.customFields[i].value = el.val();
+            task.change = true;
             break;
           }
         }
