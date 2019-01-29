@@ -123,6 +123,15 @@ GridEditor.prototype.addTask = function (task, row, hideIfParentCollapsed) {
        track:true
     });
 
+  for (var i = 0; i < task.customFields.length; i++) {
+    if (task.customFields[i].id == MUC_TIEU_KET_QUA_DAU_RA_ID) {
+      taskRow.find("[name=cf_1]").attr("title", task.customFields[i].value);
+    }
+    if (task.customFields[i].id == CAP_NHAT_TIEN_DO_ID) {
+      taskRow.find("[name=cf_2]").attr("title", task.customFields[i].value);
+    }
+  }
+
   //hardcode to not bind superior Task event
   if (task.id == "superiorTask") {
     this.bindRowEventsSuperiorTask(task, taskRow);
