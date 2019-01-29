@@ -678,6 +678,10 @@
         }
 
         function saveGanttOnServer() {
+            if (!ge.isChangedTask() && !ge.isDeletedTask()) {
+                alert("Nothing to save");
+                return;
+            }
             ge.disableSaveButton(true);
             $.ajaxSetup({
                 global: true
