@@ -1923,3 +1923,19 @@ GanttMaster.prototype.isDeletedTask = function () {
 GanttMaster.prototype.setInitialStatus = function (id) {
   this.initialStatus = id;
 }
+
+GanttMaster.prototype.recalculatePosition = function () {
+  var superiorTask = this.tasks[0];
+  var children = superiorTask.getChildren();
+  this.updateTaskPosition(children);
+}
+
+GanttMaster.prototype.updateTaskPosition = function(children) {
+  for (var i = 0; i < children.length; i++) {
+    if (children[i].position != i+1) {
+      children[i].position = i+1;
+    }
+    var c =  children[i].getChildren();
+    this.updateTaskPosition(c);
+  }
+}
