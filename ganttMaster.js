@@ -1792,9 +1792,10 @@ GanttMaster.prototype.filter = function(assignee, status, startFrom, startTo, tr
                 || (startTo && ((t.start > startTo + 86400000 - 1) || (t.end > startTo + 86400000 - 1)))
         ) {
           t.hidden = true;
-          continue;
+        }else {
+          t.hidden = false;
         }
-  
+        
     //remove depends
     // t.depends = "";
     // this.disableTask(t);
