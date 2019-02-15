@@ -30,15 +30,15 @@ function TaskFactory() {
   /**
    * Build a new Task
    */
-  this.build = function (id, name, code, level, start, duration, tracker, status, position, collapsed = false, progress = 0, description = "", assigs = [], customFields = []) {
+  this.build = function (id, name, code, level, start, duration, tracker, status, position, collapsed = false, progress = 0, description = "", assigs = [], customFields = [], depends = "") {
     // Set at beginning of day
     var adjusted_start = computeStart(start);
     var calculated_end = computeEndByDuration(adjusted_start, duration);
-    return new Task(id, name, code, level, adjusted_start, calculated_end, duration, tracker, status, position, collapsed, progress, description, assigs, customFields);
+    return new Task(id, name, code, level, adjusted_start, calculated_end, duration, tracker, status, position, collapsed, progress, description, assigs, customFields, depends);
   };
 }
 
-function Task(id, name, code, level, start, end, duration, tracker, status, position, collapsed, progress, description, assigs, customFields) {
+function Task(id, name, code, level, start, end, duration, tracker, status, position, collapsed, progress, description, assigs, customFields, depends) {
   this.id = id;
   this.name = name;
   this.progress = progress;
@@ -51,7 +51,7 @@ function Task(id, name, code, level, start, end, duration, tracker, status, posi
   this.level = level;
   //create new task with new status
   this.status = status;
-  this.depends = "";
+  this.depends = depends;
   this.tracker = tracker;
 
   this.start = start;
@@ -81,7 +81,7 @@ function Task(id, name, code, level, start, end, duration, tracker, status, posi
   this.customFields = customFields;
   this.position = position;
 
-  watch(this, ["name", "progress", "description", "level", "tracker", "status", "start", "end", "duration", "assigs", "customFields", "position"], function(){
+  watch(this, ["name", "progress", "description", "level", "tracker", "status", "start", "end", "duration", "assigs", "customFields", "position", "depends"], function(){
     // console.log("watch: ",  [this.tracker, this.id, this.name, this.description, this.status, this.level, this.position, this.duration, this.start, this.end].join(",") + " Time:" + Date.now());
     this.change = true;
   });

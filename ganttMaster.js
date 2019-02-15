@@ -515,7 +515,7 @@ GanttMaster.prototype.loadTasks = function (tasks, selectedRow) {
     var task = tasks[i];
     if (!(task instanceof Task)) {
       var t = factory.build(task.id, task.name, task.code, task.level, task.start, task.duration, task.tracker, task.status, task.position, task.collapsed, 
-          task.progress, task.description, task.assigs, task.customFields);
+          task.progress, task.description, task.assigs, task.customFields, task.depends);
       for (var key in task) {
         if (key != "end" && key != "start")
           t[key] = task[key]; //copy all properties
@@ -1795,7 +1795,7 @@ GanttMaster.prototype.filter = function(assignee, status, startFrom, startTo, tr
         }else {
           t.hidden = false;
         }
-        
+
     //remove depends
     // t.depends = "";
     // this.disableTask(t);
