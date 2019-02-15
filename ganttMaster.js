@@ -503,7 +503,7 @@ GanttMaster.prototype.loadProject = function (project) {
 };
 
 
-GanttMaster.prototype.loadTasks = function (tasks, selectedRow, filterMode = false) {
+GanttMaster.prototype.loadTasks = function (tasks, selectedRow) {
   //console.debug("GanttMaster.prototype.loadTasks")
   //var prof=new Profiler("ganttMaster.loadTasks");
   var factory = new TaskFactory();
@@ -544,13 +544,13 @@ GanttMaster.prototype.loadTasks = function (tasks, selectedRow, filterMode = fal
       this.__removeAllLinks(task, false);
     }
 
-    if (!filterMode && !task.setPeriod(task.start, task.end)) {
+    if (!task.setPeriod(task.start, task.end)) {
       alert(GanttMaster.messages.GANNT_ERROR_LOADING_DATA_TASK_REMOVED + "\n" + task.name );
       //remove task from in-memory collection
       this.tasks.splice(task.getRow(), 1);
     } else {
       //append task to editor
-      this.editor.addTask(task, null, true);
+      this.editor.addTask(task, null, true, task.hidden);
       //append task to gantt
       this.gantt.addTask(task);
     }
@@ -565,7 +565,6 @@ GanttMaster.prototype.loadTasks = function (tasks, selectedRow, filterMode = fal
     this.tasks[selectedRow].rowElement.click();
   }
 };
-
 
 GanttMaster.prototype.getTask = function (taskId) {
   var ret;
@@ -1777,48 +1776,36 @@ GanttMaster.prototype.filter = function(assignee, status, startFrom, startTo, tr
   if ((assignee | status | startFrom | startTo | tracker) == 0) {
     return;
   }
-  if (!this.filterMode) {
-    ge.disableSaveButton(true);
-    this.beginTransaction();
-    this.filterMode = true;
-    this.setFilterMode(this.filterMode);
-  } 
-  var oldTasks = JSON.parse(this.__currentTransaction.snapshot).tasks;
-
-  var tasksFilter = [];
-
-  for (var i = 0; i < oldTasks.length; i++) {
-    var t = oldTasks[i];
-    if (assignee && (t.assigs[0] == null || t.assigs[0].resourceId != assignee)) {
-      continue;
-    }
-
-    if (status && (t.status != status)) {
-      continue;
-    }
-
-    if (tracker && (t.tracker != tracker)) {
-      continue;
-    }
-
-    if (startFrom && ((t.start < startFrom) || (t.end < startFrom))) {
-      continue;
-    }
-
-    if (startTo && ((t.start > startTo + 86400000 - 1) || (t.end > startTo + 86400000 - 1))) {
-      continue;
-    }
-
+  
+  for (var i = 1; i < this.tasks.length; i++) {
+    var t = this.tasks[i];
+    if (
+        //check assignee
+        (assignee && (t.assigs[0] == null || t.assigs[0].resourceId != assignee))
+          //check status
+          || (status && (t.status != status))
+            //check tracker
+            || (tracker && (t.tracker != tracker))
+              //check startFrom
+              || (startFrom && ((t.start < startFrom) || (t.end < startFrom)))
+                //check startTo
+                || (startTo && ((t.start > startTo + 86400000 - 1) || (t.end > startTo + 86400000 - 1)))
+        ) {
+          t.hidden = true;
+          continue;
+        }
+  
     //remove depends
-    t.depends = "";
-    this.disableTask(t);
-    tasksFilter.push(t);
+    // t.depends = "";
+    // this.disableTask(t);
+    // tasksFilter.push(t);
   }
+  //reupdate superior task
+  // oldTasks[0].hidden = false;
+
   //add superior task
-  var t = oldTasks[0];
-  this.disableTask(t);
-  tasksFilter.unshift(t);
-  this.loadTasks(tasksFilter, 0, true);
+  // this.disableTask(t);
+  this.loadTasks(this.tasks, 0);
   this.redraw();
   // return tasksFilter;
 }
@@ -1865,12 +1852,17 @@ GanttMaster.prototype.setFilterMode = function(flag) {
 }
 
 GanttMaster.prototype.clearFilter = function () {
-  if (this.filterMode) {
-    ge.disableSaveButton(false);
-    this.filterMode = false;
-    this.setFilterMode(this.filterMode);
-    this.endFilter();
+  for (var i = 0; i < this.tasks.length; i++) {
+    this.tasks[i].hidden = false;
   }
+  this.loadTasks(this.tasks, 0);
+  this.redraw();
+  // if (this.filterMode) {
+  //   ge.disableSaveButton(false);
+  //   this.filterMode = false;
+  //   this.setFilterMode(this.filterMode);
+  //   this.endFilter();
+  // }
 }
 
 GanttMaster.prototype.setUser = function(userId, userName, userRoles) {

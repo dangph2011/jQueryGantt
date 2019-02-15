@@ -97,7 +97,7 @@ GridEditor.prototype.fillEmptyLines = function () {
 };
 
 
-GridEditor.prototype.addTask = function (task, row, hideIfParentCollapsed) {
+GridEditor.prototype.addTask = function (task, row, hideIfParentCollapsed, hidden = false) {
   //console.debug("GridEditor.addTask",task,row);
   //var prof = new Profiler("ganttGridEditor.addTask");
 
@@ -160,6 +160,10 @@ GridEditor.prototype.addTask = function (task, row, hideIfParentCollapsed) {
     if (task.collapsed) taskRow.addClass('collapsed');
     var collapsedDescendant = this.master.getCollapsedDescendant();
     if (collapsedDescendant.indexOf(task) >= 0) taskRow.hide();
+  }
+
+  if (hidden) {
+    taskRow.hide();
   }
   //prof.stop();
   return taskRow;
