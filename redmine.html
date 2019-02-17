@@ -110,7 +110,8 @@
 
         $(document).ajaxStop(function () {
             console.log("stopppppp");
-            loadProject(ge);
+            //check the authorization before load project
+            ajaxCheckAuthorized(server, key);
             // document.getElementById("saveOnServer").disabled = false;
             ge.disableSaveButton(false);
         });
@@ -135,13 +136,44 @@
             //in order to force compute the best-fitting zoom level
             delete ge.gantt.zoom;
 
+            $.ajaxSetup({
+                global: false
+            });
+
             // var project = loadFromLocalStorage();
 
             // if (!project.canWrite)
             //     $(".ganttButtonBar button.requireWrite").attr("disabled", "true");
-            loadProject(ge);
+
+            //check the authorization before load project
+            ajaxCheckAuthorized(server, key);
+
             console.log("Ge: ", ge);
         });
+
+        function ajaxCheckAuthorized(server, key) {
+            $.ajax({
+                type: 'GET',
+                url: proxy + server + '/projects/' + projectIdentifier + '.json',
+                data: {key:key},
+                dataType: 'text',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    //if OK load pr
+                    console.log('Authorized');
+                    loadProject(ge);
+                },
+                error: function (data) {
+                    if (data.status == 403) {
+                        alert("You are not authorized to access this project");
+                    } else if (data.status == 404) {
+                        alert("The project you were trying to access doesn't exist or has been removed.");
+                    } else {
+                        alert("Error: " + data.status + " " + data.statusText + "\n" + data.responseText);
+                    }
+                },
+            });
+        }
 
         function parseColorStatus(colorStatus, mapNameToIdStatus) {
             var mapIdToColor = {};
@@ -172,10 +204,6 @@
             var customFieldPath = server + "/custom_fields.json?callback=?" + keyRes;
 
             var trackerPath =  server + "/trackers.json?callback=?" + keyRes;
-
-            $.ajaxSetup({
-                global: false
-            });
 
             $.when($.getJSON(projectPath), $.getJSON(membershipPath), $.getJSON(issuePath), $.getJSON(rolePath),
                     $.getJSON(issueStatusPath), $.getJSON(customFieldPath), $.getJSON(trackerPath))
