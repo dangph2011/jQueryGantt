@@ -96,9 +96,14 @@
 
         var proxy = 'https://cors-anywhere.herokuapp.com/';
         var server = "http://159.65.9.28/redmine";
-        var projectIdentifier = 8;
+        var projectIdentifier = 1;
         var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
+        //dangph
+        // var key = "9b32896f3a5a8a77f891e14d54ac6880d44a52e7";
+        //new
+        // var key = "8f767c92cfd9786654647b38550dc2a72d1f2df0";
         var userId = 8;
+        var keyRes = "&key="+key;
 
         window.onbeforeunload = function () {
             if (ge.isChangedTask() || ge.isDeletedTask()) {
