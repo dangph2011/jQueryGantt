@@ -159,19 +159,19 @@
 
         function loadProject(ge) {
             //hardcode server and project identifier
-            var projectPath = server + "/projects/" + projectIdentifier + ".json?callback=?";
+            var projectPath = server + "/projects/" + projectIdentifier + ".json?callback=?" + keyRes;
 
-            var membershipPath = server + "/projects/" + projectIdentifier + "/memberships.json?callback=?";
+            var membershipPath = server + "/projects/" + projectIdentifier + "/memberships.json?callback=?" + keyRes;
 
             var issuePath = server + "/issues.json?status_id=*&project_id=" + projectIdentifier +
-                "&include=relations" + "&limit=" + LIMIT + "&callback=?";
-            var rolePath = server + "/roles.json?callback=?";
+                "&include=relations" + "&limit=" + LIMIT + "&callback=?" + keyRes;
+            var rolePath = server + "/roles.json?callback=?" + keyRes;
 
-            var issueStatusPath = server + "/issue_statuses.json?callback=?";
+            var issueStatusPath = server + "/issue_statuses.json?callback=?" + keyRes;
 
-            var customFieldPath = server + "/custom_fields.json?callback=?";
+            var customFieldPath = server + "/custom_fields.json?callback=?" + keyRes;
 
-            var trackerPath =  server + "/trackers.json?callback=?";
+            var trackerPath =  server + "/trackers.json?callback=?" + keyRes;
 
             $.ajaxSetup({
                 global: false
