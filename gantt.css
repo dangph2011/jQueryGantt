@@ -483,6 +483,18 @@ select#trackerCol {
   outline:0px;
   text-overflow: ellipsis;
   white-space: nowrap;
+  padding: 0px;
+}
+
+select#assignee {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  text-indent: 0.01px;
+  border:0px;
+  outline:0px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0px;
 }
 
 select.taskStatus{

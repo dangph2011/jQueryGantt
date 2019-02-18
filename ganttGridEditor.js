@@ -210,8 +210,27 @@ GridEditor.prototype.refreshTaskRow = function (task) {
     row.find("[name=startIsMilestone]").prop("checked", task.startIsMilestone);
     row.find("[name=endIsMilestone]").prop("checked", task.endIsMilestone);
     row.find("[name=depends]").val(task.depends);
-    row.find(".taskAssigs").html(task.getAssigsString());
-    
+
+    // row.find(".taskAssigs").html(task.getAssigsString());
+            
+    //add tracker for row
+    var assigneeEl = row.find("[name=assignee]");
+    assigneeEl.empty();
+    var opt = $("<option>");
+    assigneeEl.append(opt);
+    var assigneeId = 0
+    if (task.assigs.length != 0) {
+      assigneeId = parseInt(task.assigs[0].resourceId, 10);
+    }
+    for (var i = 0; i < task.master.resources.length; i++) {
+        var res = task.master.resources[i];
+        opt = $("<option>");
+        opt.val(res.id).html(res.name);
+        if (assigneeId == res.id)
+          opt.attr("selected", "true");
+        assigneeEl.append(opt);
+    }
+
     //add tracker for row
     var trackerEl = row.find("[name=trackerCol]");
     trackerEl.empty();
@@ -245,6 +264,7 @@ GridEditor.prototype.refreshTaskRow = function (task) {
   } else {
     row.find("[name=code]").remove();
     row.find("[name=trackerCol]").remove();
+    row.find("[name=assignee]").remove();
   }
   
   //manage collapsed
@@ -688,6 +708,26 @@ GridEditor.prototype.bindRowInputEvents = function (task, taskRow) {
 
   }).focus(function () {
     $(this).closest("tr").click();
+  });
+
+  taskRow.find("[name=assignee]").change(function () {
+    var el = $(this);
+    var tr = el.closest("[taskid]");
+    var taskId = tr.attr("taskid");
+    var task = self.master.getTask(taskId);
+    var assigneeId = $(this).attr("assignee");
+    self.master.beginTransaction();
+    if (assigneeId != "") {
+      // for (var j = 0; j < userToRole[issue.assigned_to.id].length; j++) {
+      task.assigs = [];
+      var assig = {};
+      assig.id = "tmp_" + new Date().getTime();
+      assig.resourceId = assigneeId;
+      assig.roleId = 1;
+      task.assigs.push(assig);
+      // }
+    }
+    self.master.endTransaction();
   });
 
   taskRow.find("[name=trackerCol]").change(function () {
