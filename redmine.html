@@ -1561,9 +1561,20 @@
                 assignee: ge.resources,
                 trackers: ge.trackers
             }, "TASK_FILTER");
+
+            filterPopup.find("[name=operatorsStatus]").change(function () {
+                var operator = $(this).val();
+                if (operator == 2 || operator == 3) {
+                    filterPopup.find("[name=statusId]").show();
+                } else {
+                    filterPopup.find("[name=statusId]").hide();
+                }
+            });
             
             //bind apply event
             filterPopup.find("#applyFilter").click(function () {
+                var operator = parseInt(filterPopup.find("[name=operatorsStatus]").val());
+
                 var assigneeId = filterPopup.find("[name=assigneeId]").val();
                 assigneeId = assigneeId == "" ? 0 : parseInt(assigneeId);
 
@@ -1578,7 +1589,7 @@
                 // var endFrom = getTimeValue(Date.parseString(filterPopup.find("#end_from").val()));
                 // var endTo = getTimeValue(Date.parseString(filterPopup.find("#end_to").val()));
 
-                ge.filter(assigneeId, statusId, startFrom, startTo, trackerId);
+                ge.filter(operator, assigneeId, statusId, startFrom, startTo, trackerId);
                 closeBlackPopup();
             });
 
@@ -2075,6 +2086,15 @@
                             Status
                         </td>
                         <td class="gdfCell" style="text-align:left">
+                            <select type="select" name="operatorsStatus" class="formElements">
+                                <option value=0></option>
+                                <option value=1>open</option>
+                                <option value=2>is</option>
+                                <option value=3>is not</option>
+                                <option value=4>closed</option>
+                            </select>
+
+                            &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
                             <select type="select" name="statusId" class="formElements"></select>
                         </td>
                     </tr>
@@ -2171,16 +2191,17 @@
 
         $.JST.loadDecorator("TASK_FILTER", function (resTable, resourceStatus) {
             var statusEl = resTable.find("[name=statusId]");
-            var opt = $("<option>");
-            statusEl.append(opt);
             for (var i = 0; i < resourceStatus.status.length; i++) {
                 var res = resourceStatus.status[i];
                 opt = $("<option>");
                 opt.val(res.id).html(res.name);
                 opt.attr("class", "taskStatus");
                 opt.attr("status", res.id);
+                if (0 == res.id)
+                    opt.attr("selected", "true");
                 statusEl.append(opt);
             }
+            statusEl.hide();
 
             var assigneeEl = resTable.find("[name=assigneeId]");
             var opt = $("<option>");

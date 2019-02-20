@@ -30,6 +30,7 @@ function GanttMaster() {
   this.user;
   this.initialStatus = 1;
   this.trackers = [];
+  this.closedStatus = [];
 
   this.editor; //element for editor
   this.gantt; //element for gantt
@@ -446,6 +447,7 @@ GanttMaster.prototype.loadProject = function (project) {
   this.resources = project.resources;
   this.roles = project.roles;
   this.status = project.status;
+  this.setClosedStatusId();
   this.trackers = project.trackers;
 
   //permissions from loaded project
@@ -1772,29 +1774,30 @@ GanttMaster.prototype.setHoursOn = function(startWorkingHour,endWorkingHour,date
   millisInWorkingDay=endWorkingHour-startWorkingHour;
 };
 
-GanttMaster.prototype.filter = function(assignee, status, startFrom, startTo, tracker) {
-  if ((assignee | status | startFrom | startTo | tracker) == 0) {
+GanttMaster.prototype.filter = function(operator, assignee, status, startFrom, startTo, tracker) {
+  if ((operator | status | startFrom | startTo | tracker) == 0) {
     return;
   }
   
   for (var i = 1; i < this.tasks.length; i++) {
     var t = this.tasks[i];
-    if (
-        //check assignee
-        (assignee && (t.assigs[0] == null || t.assigs[0].resourceId != assignee))
-          //check status
-          || (status && (t.status != status))
-            //check tracker
-            || (tracker && (t.tracker != tracker))
-              //check startFrom
-              || (startFrom && ((t.start < startFrom) || (t.end < startFrom)))
-                //check startTo
-                || (startTo && ((t.start > startTo + 86400000 - 1) || (t.end > startTo + 86400000 - 1)))
-        ) {
-          t.hidden = true;
-        }else {
-          t.hidden = false;
-        }
+
+    if ( 
+      //check status
+      this.checkStatusTaskFilter(t, operator, status)
+      //check assignee
+      || (assignee && (t.assigs[0] == null || t.assigs[0].resourceId != assignee))
+          //check tracker
+          || (tracker && (t.tracker != tracker))
+            //check startFrom
+            || (startFrom && ((t.start < startFrom) || (t.end < startFrom)))
+              //check startTo
+              || (startTo && ((t.start > startTo + 86400000 - 1) || (t.end > startTo + 86400000 - 1)))
+      ) {
+        t.hidden = true;
+      } else {
+        t.hidden = false;
+      }
 
     //remove depends
     // t.depends = "";
@@ -1809,6 +1812,47 @@ GanttMaster.prototype.filter = function(assignee, status, startFrom, startTo, tr
   this.loadTasks(this.tasks, 0);
   this.redraw();
   // return tasksFilter;
+}
+
+GanttMaster.prototype.checkStatusTaskFilter = function (task, operator, status) {
+  switch (operator) {
+    case 0:
+      return false;
+      break;
+
+    case 1:
+      if (this.closedStatus.includes(parseInt(task.status))) {
+        return true;
+      }
+      return false;
+      break;
+
+    case 2:
+      if (task.status == status) {
+        return false;
+      }
+      return true;
+      break;
+
+    case 3:
+      if (task.status != status) {
+        return false;
+      }
+      return true;
+      break;
+
+    case 4:
+      if (this.closedStatus.includes(parseInt(task.status))) {
+        return false;
+      }
+      return true;
+      break;
+  
+    default:
+      break;
+  }
+  
+  return false;
 }
 
 GanttMaster.prototype.disableTask = function(task) {
@@ -1930,5 +1974,15 @@ GanttMaster.prototype.updateTaskPosition = function(children) {
     }
     var c =  children[i].getChildren();
     this.updateTaskPosition(c);
+  }
+}
+
+GanttMaster.prototype.setClosedStatusId = function() {
+  //Get closed project status id: (Closed and Rejected status)
+  this.closedStatus = []
+  for (var i = 0; i < this.status.length; i++){
+      if (this.status[i].name == "Closed" || this.status[i].name == "Rejected") {
+        this.closedStatus.push(this.status[i].id);
+      }
   }
 }
