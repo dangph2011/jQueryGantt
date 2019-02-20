@@ -480,6 +480,7 @@
                             } else {
                                 depends += "," + posIssueId + ":" + relation.delay;
                             }
+                            relation.isDelete = true;
                             tasks[posIssueToId].relations.push(relation);
                         }
                     }
@@ -676,6 +677,7 @@
                 error: function (data) {
                     alert("ERROR create relation : " + data.status + " " + data.statusText + "\n" + data.responseText);
                     console.log('ERROR create relation: ', data);
+                    handleRelations(relationQueue);
                 },
             });
         }
@@ -795,6 +797,7 @@
                                     task.id) {
                                     relId = task.relations[k].id;
                                     if (delay == task.relations[k].delay) {
+                                        task.relations[k].isDelete = false;
                                         created = false;
                                     }
                                     break;
@@ -821,6 +824,14 @@
                                 "precede_id": precedeId
                             };
                             relationsBackward[task.id].push(rb);
+                        }
+                    }
+                    for (var k = 0; k < task.relations.length; k++) {
+                        if (task.relations[k].isDelete) {
+                            var relId = task.relations[k].id;
+                            if (relId > 0) {
+                                ajaxDeleteRelation(server, key, relId);
+                            }
                         }
                     }
                 } else {
