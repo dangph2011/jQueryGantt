@@ -243,6 +243,18 @@ GridEditor.prototype.refreshTaskRow = function (task) {
         trackerEl.append(opt);
     }
 
+    //add status for row
+    var statusEl = row.find("[name=statusCol]");
+    statusEl.empty();
+    for (var i = 0; i < task.master.status.length; i++) {
+        var res = task.master.status[i];
+        opt = $("<option>");
+        opt.val(res.id).html(res.name);
+        if (task.status == res.id)
+          opt.attr("selected", "true");
+          statusEl.append(opt);
+    }
+
     //hardcode cf_1(7) for test row
     var cf1 = row.find("[name=cf_1]");
     for (var i = 0; i < task.customFields.length; i++) {
@@ -264,6 +276,7 @@ GridEditor.prototype.refreshTaskRow = function (task) {
   } else {
     row.find("[name=code]").remove();
     row.find("[name=trackerCol]").remove();
+    row.find("[name=statusCol]").remove();
     row.find("[name=assignee]").remove();
   }
   
@@ -741,6 +754,17 @@ GridEditor.prototype.bindRowInputEvents = function (task, taskRow) {
     self.master.endTransaction();
   });
 
+  taskRow.find("[name=statusCol]").change(function () {
+    var el = $(this);
+    var tr = el.closest("[taskid]");
+    var taskId = tr.attr("taskid");
+    var task = self.master.getTask(taskId);
+    var status = $(this).attr("status");
+    self.master.beginTransaction();
+    task.changeStatus(status);
+    self.master.endTransaction();
+  });
+
   //change status
   taskRow.find(".taskStatus").click(function () {
     var el = $(this);
@@ -864,6 +888,7 @@ GridEditor.prototype.openFullEditor = function (task, editOnlyAssig) {
   //make custom field table
   var customFieldTable = taskEditor.find("#customFieldTable");
   customFieldTable.find("[ctfId]").remove();
+
   //loop on custom fields
   for (var i = 0; i < task.customFields.length; i++) {
     var ctf = task.customFields[i];

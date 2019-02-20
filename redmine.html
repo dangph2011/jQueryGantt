@@ -89,14 +89,14 @@
         var COLOR_STATUS = "color_status";
         var DEFAULT_COLOR = "#C0C0C0";
         var INITIAL_STATUS = "initial_status";
-        var LIMIT = 100;
+        var LIMIT = 1000;
         //hardcode custom field id
         var MUC_TIEU_KET_QUA_DAU_RA_ID = 7;
         var CAP_NHAT_TIEN_DO_ID = 8;
 
         var proxy = 'https://cors-anywhere.herokuapp.com/';
         var server = "http://159.65.9.28/redmine";
-        var projectIdentifier = 1;
+        var projectIdentifier = 8;
         var key = "4e46ce6c1275bc5d65e95ad66fc23a7c665767d0";
         //dangph
         // var key = "9b32896f3a5a8a77f891e14d54ac6880d44a52e7";
@@ -1810,6 +1810,7 @@
       <th class="gdfColHeader gdfResizable" style="width:40px;">#</th>
       <th class="gdfColHeader gdfResizable" style="width:300px;">name</th>
       <th class="gdfColHeader gdfResizable" style="width:80px;">tracker</th>
+      <th class="gdfColHeader gdfResizable" style="width:80px;">status</th>
       <th class="gdfColHeader"  align="center" style="width:17px;" title="Start date is a milestone."><span class="teamworkIcon" style="font-size: 8px;">^</span></th>
       <th class="gdfColHeader gdfResizable" style="width:80px;">start</th>
       <th class="gdfColHeader"  align="center" style="width:17px;" title="End date is a milestone."><span class="teamworkIcon" style="font-size: 8px;">^</span></th>
@@ -1837,6 +1838,7 @@
       <input type="text" name="name" value="(#=obj.name#)" placeholder="name">
     </td>
     <td class="gdfCell"><select id="trackerCol" name="trackerCol" onchange="$(this).attr('tracker',$(this).val());"> </select></td>
+    <td class="gdfCell"><select id="statusCol" name="statusCol" onchange="$(this).attr('status',$(this).val());"> </select></td>
     <td class="gdfCell" align="center"><input type="checkbox" name="startIsMilestone"></td>
     <td class="gdfCell"><input type="text" name="start"  value="" class="date"></td>
     <td class="gdfCell" align="center"><input type="checkbox" name="endIsMilestone"></td>
@@ -1856,6 +1858,7 @@
   <tr class="taskEditRow emptyRow" >
     <th class="gdfCell" align="right"></th>
     <td class="gdfCell noClip" align="center"></td>
+    <td class="gdfCell"></td>
     <td class="gdfCell"></td>
     <td class="gdfCell"></td>
     <td class="gdfCell"></td>
