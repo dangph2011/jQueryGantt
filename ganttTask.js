@@ -81,7 +81,7 @@ function Task(id, name, code, level, start, end, duration, tracker, status, posi
   this.customFields = customFields;
   this.position = position;
 
-  watch(this, ["name", "progress", "description", "level", "tracker", "status", "start", "end", "duration", "assigs", "customFields", "position", "depends"], function(){
+  watch(this, ["name", "progress", "description", "level", "tracker", "status", "start", "end", "duration", "assigs", "customFields", "position"], function(){
     // console.log("watch: ",  [this.tracker, this.id, this.name, this.description, this.status, this.level, this.position, this.duration, this.start, this.end].join(",") + " Time:" + Date.now());
     this.change = true;
   });

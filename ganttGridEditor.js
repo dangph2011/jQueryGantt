@@ -393,78 +393,78 @@ GridEditor.prototype.bindRowEvents = function (task, taskRow) {
 		
     taskRow.find(".edit").click(function () {self.openFullEditor(task, false)});
 	//hailh depends editor
-	taskRow.find("[name=depends]").dblclick(
+	// // taskRow.find("[name=depends]").dblclick(
 		
-		function () {
+	// // 	function () {
 			
-			console.log(self.master);
+	// // 		console.log(self.master);
 			
-			console.log(task);
-			//task.depends="3:3";
-			//self.master.redraw();
-			var dependsEditor = $.JST.createFromTemplate({}, "DEPENDS_EDITOR");
-			dependsEditor.attr("alertonchange","true");
-			var ndo = createModalPopup(350, 250).append(dependsEditor);//.append("<div style='height:800px; background-color:red;'></div>"
-			var depTbl=dependsEditor.find("#dependsTable");
+	// // 		console.log(task);
+	// // 		//task.depends="3:3";
+	// // 		//self.master.redraw();
+	// // 		var dependsEditor = $.JST.createFromTemplate({}, "DEPENDS_EDITOR");
+	// // 		dependsEditor.attr("alertonchange","true");
+	// // 		var ndo = createModalPopup(350, 250).append(dependsEditor);//.append("<div style='height:800px; background-color:red;'></div>"
+	// // 		var depTbl=dependsEditor.find("#dependsTable");
 			
-			parts = task.depends.split(",");
+	// // 		parts = task.depends.split(",");
 			
-			depends =[];	
-			for(var i=0; i<parts.length; i++){
-				depend = parts[i].split(":");
-				var depId = depend[0];
-				var day=0;
-				if(depend.length>1)
-					day=depend[1];
-				depends.push({name:depId,day:day});
-			}
+	// // 		depends =[];	
+	// // 		for(var i=0; i<parts.length; i++){
+	// // 			depend = parts[i].split(":");
+	// // 			var depId = depend[0];
+	// // 			var day=0;
+	// // 			if(depend.length>1)
+	// // 				day=depend[1];
+	// // 			depends.push({name:depId,day:day});
+	// // 		}
 			
-			for (var i=0;i<depends.length;i++){
-				var dep=depends[i];
+	// // 		for (var i=0;i<depends.length;i++){
+	// // 			var dep=depends[i];
 
-				depTbl.append($.JST.createFromTemplate(dep, "DEPEND_ROW"))
-			}
+	// // 			depTbl.append($.JST.createFromTemplate(dep, "DEPEND_ROW"))
+	// // 		}
 
 
-			//bind add resource
-			dependsEditor.find("#addDepend").click(function(){
-				depTbl.append($.JST.createFromTemplate({id:"",day:0}, "DEPEND_ROW"))
-			});
+	// // 		//bind add resource
+	// // 		dependsEditor.find("#addDepend").click(function(){
+	// // 			depTbl.append($.JST.createFromTemplate({id:"",day:0}, "DEPEND_ROW"))
+	// // 		});
 			
-			//bind add resource
-			dependsEditor.find("#depSaveButton").click(function(){
-				task.depends="";
-				 self.master.beginTransaction();
+	// // 		//bind add resource
+	// // 		dependsEditor.find("#depSaveButton").click(function(){
+	// // 			task.depends="";
+	// // 			 self.master.beginTransaction();
 				  
-				dependsEditor.find("tr[dep]").each(function () {
-					var trDep = $(this);
-					var depId = trDep.find("[name=depId]").val();
-					var day = trDep.find("[name=day]").val(); // from smartcombo text input part				
-					dep={name:depId, day:day};
-					task.depends += depId+":"+day;
-					console.log(dep);
+	// // 			dependsEditor.find("tr[dep]").each(function () {
+	// // 				var trDep = $(this);
+	// // 				var depId = trDep.find("[name=depId]").val();
+	// // 				var day = trDep.find("[name=day]").val(); // from smartcombo text input part				
+	// // 				dep={name:depId, day:day};
+	// // 				task.depends += depId+":"+day;
+	// // 				console.log(dep);
 				
-			  });  
+	// // 		  });  
 			  
 
-			  if (self.master.endTransaction()) {
-				//taskEditor.find(":input").updateOldValue();
-				//task.master.redraw();
-				 self.master.updateLinks(task);
-         self.master.changeTaskDeps(task); //dates recomputation from dependencies
-				closeBlackPopup();
-			  }
+	// // 		  if (self.master.endTransaction()) {
+	// // 			//taskEditor.find(":input").updateOldValue();
+	// // 			//task.master.redraw();
+	// // 			 self.master.updateLinks(task);
+  // //        self.master.changeTaskDeps(task); //dates recomputation from dependencies
+	// // 			closeBlackPopup();
+	// // 		  }
 			  
-			  console.log('SAVED!!!');
+	// // 		  console.log('SAVED!!!');
 
 				
-			});
+	// // 		});
 			  
 			  
 			
 			
-		}
-	);//hailh
+	// 	}
+	// );//hailh
 
     taskRow.find("[id=taskAssigs]").click(function (ev) { //open editor only if no text has been selected
       self.openFullEditor(task, true); //hailh
@@ -579,6 +579,7 @@ GridEditor.prototype.bindRowInputEvents = function (task, taskRow) {
       if (field == "depends") {
         var oldDeps = task.depends;
         task.depends = el.val();
+        task.change = true;
 
         // update links
         var linkOK = self.master.updateLinks(task);
