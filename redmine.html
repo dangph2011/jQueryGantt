@@ -437,6 +437,7 @@
                     ge.loadProject(project);
                     ge.checkpoint(); //empty the undo stack
                     ge.recalculatePosition(); 
+                    ge.filter(1);
                 }).fail(function (problem) {
                     alert("error when getting project: " + problem.status + " " + problem.statusText);
                     console.log("Problem: ", problem);
