@@ -336,9 +336,12 @@
 
                     // travel all issue 
                     for (var i = 0; i < issues[0].issues.length; i++) {
+                        var issue = issues[0].issues[i];
+                        if (issue.project.id != projectIdentifier) {
+                            continue;
+                        }
                         var task = {};
 
-                        var issue = issues[0].issues[i];
                         task.id = issue.id;
                         task.code = issue.id;
                         task.name = issue.subject;
