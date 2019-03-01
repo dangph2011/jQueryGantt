@@ -191,13 +191,10 @@ Task.prototype.setPeriod = function (start, end) {
   }
 
   //set end
-  var wantedEndMillis = end;
-
-  if (this.end != end || this.end != wantedEndMillis) {
+  if (this.end != end ) {
     this.end = end;
     somethingChanged = true;
   }
-
   this.duration = recomputeDuration(this.start, this.end);
 
   //profilerSetPer.stop();
@@ -248,7 +245,7 @@ Task.prototype.setPeriod = function (start, end) {
     }
     this.duration = recomputeDuration(this.start, this.end);
     if (this.master.shrinkParent ) {
-      todoOk = updateTree(this);
+      this.master.enqueueUpdateTree(this);
     }
 
   } else {
@@ -261,7 +258,7 @@ Task.prototype.setPeriod = function (start, end) {
 
     //console.debug("set period: somethingChanged",this);
     if (todoOk ) {
-      todoOk = updateTree(this);
+      this.master.enqueueUpdateTree(this);
     }
   }
 
@@ -271,8 +268,91 @@ Task.prototype.setPeriod = function (start, end) {
   return todoOk;
 };
 
+Task.prototype.setPeriodGeneratedByDescendant = function (start, end) {
+  //console.debug("setPeriodGeneratedByDescendant ", this.code, this.name, new Date(start), new Date(end));
+  //var profilerSetPer = new Profiler("gt_setPeriodJS");
 
-//<%---------- MOVE TO ---------------------- --%>
+  if (start instanceof Date) {
+    start = start.getTime();
+  }
+
+  if (end instanceof Date) {
+    end = end.getTime();
+  }
+
+  var originalPeriod = {
+    start:    this.start,
+    end:      this.end,
+    duration: this.duration
+  };
+
+
+  //compute legal start/end //todo mossa qui R&S 30/3/2016 perchè altrimenti il calcolo della durata, che è stato modificato sommando giorni, sbaglia
+  start = computeStart(start);
+  end = computeEnd(end);
+
+  var newDuration = recomputeDuration(start, end);
+
+  //if are equals do nothing and return true
+  if (start == originalPeriod.start && end == originalPeriod.end && newDuration == originalPeriod.duration) {
+    return true;
+  }
+
+//  if (newDuration == this.duration) { // is shift   non serve perchè gli inferiors si controllano comunque
+//    return this.moveTo(start, false, true);
+//  }
+
+  var wantedStartMillis = start;
+
+  var children = this.getChildren();
+
+  //cannot start after end
+  if (start > end) {
+    start = end;
+  }
+
+  //if there are dependencies you cannot change start date
+  var startBySuperiors = this.computeStartBySuperiors(start);
+  if (startBySuperiors != start) {
+    return false;
+  }
+
+  var somethingChanged = false;
+
+  if (this.start != start || this.start != wantedStartMillis) {
+    this.start = start;
+    somethingChanged = true;
+  }
+
+  //set end
+  if (this.end != end ) {
+    this.end = end;
+    somethingChanged = true;
+  }
+
+  this.duration = recomputeDuration(this.start, this.end);
+
+  //profilerSetPer.stop();
+
+  //nothing changed exit
+  if (!somethingChanged)
+    return true;
+
+  //cannot write exit
+  if (!this.canWrite) {
+    this.master.setErrorOnTransaction("\"" + this.name + "\"\n" + GanttMaster.messages["CANNOT_WRITE"], this);
+    return false;
+  }
+
+
+  //external dependencies: exit with error
+  if (this.hasExternalDep) {
+    this.master.setErrorOnTransaction("\"" + this.name + "\"\n" + GanttMaster.messages["TASK_HAS_EXTERNAL_DEPS"], this);
+    return false;
+  }
+
+  return  this.propagateToInferiors(end);
+};//<%---------- MOVE TO ---------------------- --%>
 Task.prototype.moveTo = function (start, ignoreMilestones, propagateToInferiors) {
   //console.debug("moveTo ",this.name,new Date(start),this.duration,ignoreMilestones);
   //var profiler = new Profiler("gt_task_moveTo");
@@ -330,10 +410,7 @@ Task.prototype.moveTo = function (start, ignoreMilestones, propagateToInferiors)
       ch.moveTo(chStart,false,false);
       }
 
-    if (!updateTree(this)) {
-      return false;
-    }
-
+      this.master.enqueueUpdateTree(this);
     if (propagateToInferiors) {
       this.propagateToInferiors(end);
       var todoOk = true;
@@ -408,77 +485,9 @@ Task.prototype.computeStartBySuperiors = function (proposedStart) {
 };
 
 
-function updateTree(task) {
-  //console.debug("updateTree ",task.code,task.name, new Date(task.start), new Date(task.end));
-  var error;
-
-  //try to enlarge parent
-  var p = task.getParent();
-
-  //no parent:exit
-  if (!p)
-    return true;
-
-  var newStart;
-  var newEnd;
-
-  //id shrink start and end are computed on children boundaries
-  if (task.master.shrinkParent) {
-    var chPeriod= p.getChildrenBoudaries();
-    newStart = chPeriod.start;
-    newEnd = chPeriod.end;
-  } else {
-    newStart = p.start;
-    newEnd = p.end;
-
-  if (p.start > task.start) {
-      newStart = task.start;
-    }
-    if (p.end < task.end) {
-      newEnd = task.end;
-    }
-  }
-
-  if (p.start!=newStart) {
-    if (p.startIsMilestone) {
-      task.master.setErrorOnTransaction("\"" + p.name + "\"\n" + GanttMaster.messages["START_IS_MILESTONE"], task);
-      return false;
-    } else if (p.depends) {
-      task.master.setErrorOnTransaction("\"" + p.name + "\"\n" + GanttMaster.messages["TASK_HAS_CONSTRAINTS"], task);
-      return false;
-    }
-  }
-  if (p.end!=newEnd) {
-    if (p.endIsMilestone) {
-      task.master.setErrorOnTransaction("\"" + p.name + "\"\n" + GanttMaster.messages["END_IS_MILESTONE"], task);
-      return false;
-    }
-  }
-
-
-  //propagate updates if needed
-  if (newStart != p.start || newEnd != p.end) {
-
-    //can write?
-    if (!p.canWrite) {
-      task.master.setErrorOnTransaction(GanttMaster.messages["CANNOT_WRITE"] + "\n" + p.name, task);
-      return false;
-    }
-
-    //has external deps ?
-    if (p.hasExternalDep) {
-      task.master.setErrorOnTransaction(GanttMaster.messages["TASK_HAS_EXTERNAL_DEPS"] + "\n\"" + p.name + "\"", task);
-      return false;
-    }
-
-    return p.setPeriod(newStart, newEnd);
-  }
-
-  return true;
-}
-
-
 Task.prototype.getChildrenBoudaries = function () {
+  // if (this.id == 18098)
+  //   debugger
   var newStart = Infinity;
   var newEnd = -Infinity;
   var children = this.getChildren();
@@ -971,14 +980,14 @@ Task.prototype.indent = function () {
     // set start date to parent' start if no deps
     if (parent && !this.depends) {
       var new_end = computeEndByDuration(parent.start, this.duration);
-      this.master.changeTaskDates(this, parent.start, new_end);
+      this.setPeriod(parent.start, new_end);
     }
 
 
     //recompute depends string
     this.master.updateDependsStrings();
     //enlarge parent using a fake set period
-    updateTree(this);
+    this.master.enqueueUpdateTree(this);
     //force status check starting from parent
     this.getParent().synchronizeStatus();
   }

@@ -86,6 +86,7 @@ function GanttMaster() {
   this.currentTask; // task currently selected;
 
   this.resourceUrl = "res/"; // URL to resources (images etc.)
+  this.__pendingUpdateTreeQueue= []; // this is a list of pending treeUpdates
   this.__currentTransaction;  // a transaction object holds previous state during changes
   this.__undoStack = [];
   this.__redoStack = [];
@@ -430,6 +431,7 @@ GanttMaster.prototype.addTask = function (task, row) {
     this.gantt.addTask(task);
   }
 
+  this.updateTreeEnqueued();
 //trigger addedTask event 
   $(this.element).trigger("addedTask.gantt", task);
   return ret;
@@ -558,6 +560,7 @@ GanttMaster.prototype.loadTasks = function (tasks, selectedRow) {
     }
   }
 
+  this.updateTreeEnqueued();
   //this.editor.fillEmptyLines();
   //prof.stop();
 
@@ -595,43 +598,27 @@ GanttMaster.prototype.getResource = function (resId) {
 
 
 GanttMaster.prototype.changeTaskDeps = function (task) {
-  return task.moveTo(task.start,false,true);
+  var ret = task.moveTo(task.start, false, true);
+  ret=ret&&this.updateTreeEnqueued();
+  return  ret;
 };
 
 GanttMaster.prototype.changeTaskDates = function (task, start, end) {
   //console.debug("changeTaskDates",task, start, end)
-  //hailh
-  var oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds 
-  var diffDays = Math.round(Math.abs((end - start)/(oneDay)));
-  for(var i=1;i<=diffDays;i++){
-    var date = new Date(start.valueOf());
-    date.setDate(date.getDate() + i);
-    task.setPeriod(start, date.getTime());
-  }   
-  //return task.setPeriod(start, end);
+  var ret = task.setPeriod(start, end);
+  //console.debug("GanttMaster.prototype.changeTaskDates "+task.name+": "+ret);
+  ret=ret&&this.updateTreeEnqueued();
+  return  ret;
 
 };
 
 
 GanttMaster.prototype.moveTask = function (task, newStart) {
-  //hailh
-  var oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds 
-  var start = new Date(task.start); 
-
-  var diffDays = Math.round(Math.abs((newStart.getTime() - start.getTime())/(oneDay)));
-  var direction;
-  if(newStart.getTime() > start.getTime())
-	  direction=1
-  else
-	  direction=-1;
-  for(var i=1;i<=diffDays;i++){
-    
-    var date = new Date(start);
-      date.setDate(start.getDate() + i*direction);
-      task.moveTo(date, true,true);
-  }
-  
-  //return task.moveTo(newStart, true,true);
+  //console.debug("GanttMaster.prototype.moveTask ",task);
+  var ret = task.moveTo(newStart, true,true);
+  //console.debug("GanttMaster.prototype.moveTask "+task.name+": "+ret);
+  ret=ret&&this.updateTreeEnqueued();
+  return  ret;
 };
 
 
@@ -961,9 +948,9 @@ GanttMaster.prototype.updateLinks = function (task) {
         supStr=depString.substr(0,pos);
         var lagStr=depString.substr(pos+1);
 
-        //lag=Math.ceil((stringToDuration(lagStr)) / Date.workingPeriodResolution) * Date.workingPeriodResolution;
+        lag=Math.ceil((stringToDuration(lagStr)) / Date.workingPeriodResolution) * Date.workingPeriodResolution;
         //hailh
-        lag = parseInt(lagStr);
+        // lag = parseInt(lagStr);
       }
 
       var sup = this.tasks[parseInt(supStr)-1];
@@ -1039,6 +1026,7 @@ GanttMaster.prototype.outdentCurrentTask = function () {
 
     self.beginTransaction();
     self.currentTask.outdent();
+    this.updateTreeEnqueued();
     self.endTransaction();
 
     //[expand]
@@ -1057,6 +1045,7 @@ GanttMaster.prototype.indentCurrentTask = function () {
 
     self.beginTransaction();
     self.currentTask.indent();
+    this.updateTreeEnqueued();
     self.endTransaction();
   }
 };
@@ -1215,7 +1204,16 @@ GanttMaster.prototype.fullScreen = function () {
   $("#fullscrbtn .teamworkIcon").html(this.workSpace.is(".ganttFullScreen")?"€":"@");
 };
 
-
+GanttMaster.prototype.toggleCritical= function () {
+  //console.debug("fullScreen");
+  this.showCriticalPath=!this.showCriticalPath;
+  if(this.showCriticalPath){
+    $("#critPathBtn").addClass('critical')
+  }else{
+    $("#critPathBtn").removeClass('critical')
+  }
+  ge.redraw();
+};
 GanttMaster.prototype.expandAll = function () {
   //console.debug("expandAll");
   if (this.currentTask){
@@ -1282,8 +1280,110 @@ GanttMaster.prototype.getCollapsedDescendant = function () {
     if (task.collapsed) collapsedDescendant = collapsedDescendant.concat(task.getDescendant());
   }
   return collapsedDescendant;
-}
+};
 
+
+// ------------------------ ENQUEUE UPDATE TREE -------------------
+/**
+ * Enqueue all UP propagation from children to parent in ortder to execute it only once
+ * @param task
+ */
+GanttMaster.prototype.enqueueUpdateTree = function (task) {
+    //try to enlarge parent
+    var p = task.getParent();
+
+    //no parent:exit
+    if (!p)
+      return;
+
+    if (this.__pendingUpdateTreeQueue.indexOf(p) <= 0)
+      this.__pendingUpdateTreeQueue.push(p);
+
+    this.enqueueUpdateTree(p);
+};
+
+
+
+GanttMaster.prototype.updateTreeEnqueued= function() {
+  //no parent:exit
+  if (!this.__pendingUpdateTreeQueue || this.__pendingUpdateTreeQueue.length==0)
+    return true;
+
+  //console.debug("GanttMaster.prototype.updateTreeEnqueued ", this.__pendingUpdateTreeQueue);
+
+  var newStart;
+  var newEnd;
+  var todoOk=true;
+
+  for (var i=0;i<this.__pendingUpdateTreeQueue.length;i++) {
+    var p = this.__pendingUpdateTreeQueue[i];
+    var chPeriod = p.getChildrenBoudaries();
+
+    if (this.shrinkParent) {
+      newStart = chPeriod.start;
+      newEnd = chPeriod.end;
+    } else {
+      newStart = p.start;
+      newEnd = p.end;
+
+      if (p.start > chPeriod.start) {
+        newStart = chPeriod.start;
+      }
+      if (p.end < chPeriod.end) {
+        newEnd = chPeriod.end;
+      }
+    }
+
+
+    if (p.start != newStart) {
+      if (p.startIsMilestone) {
+        this.setErrorOnTransaction("\"" + p.name + "\"\n" + GanttMaster.messages["START_IS_MILESTONE"], p);
+        todoOk= false;
+        break;
+      } else if (p.depends) {
+        this.setErrorOnTransaction("\"" + p.name + "\"\n" + GanttMaster.messages["TASK_HAS_CONSTRAINTS"], p);
+        todoOk= false;
+        break;
+      }
+    }
+    if (p.end != newEnd) {
+      if (p.endIsMilestone) {
+        this.setErrorOnTransaction("\"" + p.name + "\"\n" + GanttMaster.messages["END_IS_MILESTONE"], p);
+        todoOk= false;
+        break;
+      }
+    }
+
+
+    //propagate updates if needed
+    if (newStart != p.start || newEnd != p.end) {
+
+      //can write?
+      if (!p.canWrite) {
+        this.setErrorOnTransaction(GanttMaster.messages["CANNOT_WRITE"] + "\n" + p.name, p);
+        todoOk= false;
+        break;
+      }
+
+      //has external deps ?
+      if (p.hasExternalDep) {
+        this.setErrorOnTransaction(GanttMaster.messages["TASK_HAS_EXTERNAL_DEPS"] + "\n\"" + p.name + "\"", p);
+        todoOk= false;
+        break;
+      }
+
+      todoOk= p.setPeriodGeneratedByDescendant(newStart, newEnd);
+
+      if (!todoOk)
+        break;
+    }
+  }
+
+  //si svuota l'array
+  this.__pendingUpdateTreeQueue=[];
+
+  return todoOk;
+};
 
 
 
@@ -1355,7 +1455,9 @@ GanttMaster.prototype.endTransaction = function () {
 
   var ret = true;
 
-  //no error -> commit
+ //empty updateTreeEnqueued
+ this.__pendingUpdateTreeQueue= [];  
+ //no error -> commit
   if (this.__currentTransaction.errors.length <= 0) {
     //console.debug("committing transaction");
 
