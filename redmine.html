@@ -1563,10 +1563,11 @@
             var filterPopup = $.JST.createFromTemplate({
                 status: ge.status,
                 assignee: ge.resources,
-                trackers: ge.trackers
+                trackers: ge.trackers,
+                options: ge.filterOpts
             }, "TASK_FILTER");
 
-            filterPopup.find("[name=operatorsStatus]").change(function () {
+            filterPopup.find("[name=statusOperatorId]").change(function () {
                 var operator = $(this).val();
                 if (operator == 2 || operator == 3) {
                     filterPopup.find("[name=statusId]").show();
@@ -1577,7 +1578,7 @@
             
             //bind apply event
             filterPopup.find("#applyFilter").click(function () {
-                var operator = parseInt(filterPopup.find("[name=operatorsStatus]").val());
+                var operator = parseInt(filterPopup.find("[name=statusOperatorId]").val());
 
                 var assigneeId = filterPopup.find("[name=assigneeId]").val();
                 assigneeId = assigneeId == "" ? 0 : parseInt(assigneeId);
@@ -2090,14 +2091,7 @@
                             Status
                         </td>
                         <td class="gdfCell" style="text-align:left">
-                            <select type="select" name="operatorsStatus" class="formElements">
-                                <option value=0></option>
-                                <option value=1>open</option>
-                                <option value=2>is</option>
-                                <option value=3>is not</option>
-                                <option value=4>closed</option>
-                            </select>
-
+                            <select type="select" name="statusOperatorId" class="formElements"></select>
                             &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
                             <select type="select" name="statusId" class="formElements"></select>
                         </td>
@@ -2194,6 +2188,25 @@
         });
 
         $.JST.loadDecorator("TASK_FILTER", function (resTable, resourceStatus) {
+            var options = resourceStatus.options;
+
+            var operatorStatus = [];
+            operatorStatus[0] = {id: 0, name: ""};
+            operatorStatus[1] = {id: 1, name: "open"};
+            operatorStatus[2] = {id: 2, name: "is"};
+            operatorStatus[3] = {id: 3, name: "is not"};
+            operatorStatus[4] = {id: 4, name: "closed"};
+
+            var statusOperatorEl = resTable.find("[name=statusOperatorId]");
+            for (var i = 0; i < operatorStatus.length; i++) {
+                var res = operatorStatus[i];
+                opt = $("<option>");
+                opt.val(res.id).html(res.name);
+                if (options.statusOperatorId == res.id)
+                    opt.attr("selected", "true");
+                statusOperatorEl.append(opt);
+            }
+
             var statusEl = resTable.find("[name=statusId]");
             for (var i = 0; i < resourceStatus.status.length; i++) {
                 var res = resourceStatus.status[i];
@@ -2201,11 +2214,15 @@
                 opt.val(res.id).html(res.name);
                 opt.attr("class", "taskStatus");
                 opt.attr("status", res.id);
-                if (0 == res.id)
+                if (options.statusId == res.id)
                     opt.attr("selected", "true");
                 statusEl.append(opt);
             }
-            statusEl.hide();
+            if (options.statusOperatorId == 2 || options.statusOperatorId == 3) {
+                statusEl.show();
+            } else {
+                statusEl.hide();
+            }
 
             var assigneeEl = resTable.find("[name=assigneeId]");
             var opt = $("<option>");
@@ -2214,6 +2231,8 @@
                 var res = resourceStatus.assignee[i];
                 opt = $("<option>");
                 opt.val(res.id).html(res.name);
+                if (options.assigneeId == res.id)
+                    opt.attr("selected", "true");
                 assigneeEl.append(opt);
             }
 
@@ -2224,7 +2243,19 @@
                 var res = resourceStatus.trackers[i];
                 opt = $("<option>");
                 opt.val(res.id).html(res.name);
+                if (options.trackerId == res.id)
+                    opt.attr("selected", "true");
                 trackerEl.append(opt);
+            }
+
+            var startFrom = resTable.find("[name=start_from]");
+            if (options.startFrom > 0) {
+                startFrom.val(new Date(options.startFrom).format());
+            }
+           
+            var startTo = resTable.find("[name=start_to]");
+            if (options.startTo > 0) {
+                startTo.val(new Date(options.startTo).format());
             }
         });
 

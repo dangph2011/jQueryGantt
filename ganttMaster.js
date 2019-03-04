@@ -80,6 +80,15 @@ function GanttMaster() {
     cannotCloseTaskIfIssueOpen: false
   };
 
+  this.filterOpts = {
+    trackerId: 0,
+    statusOperatorId: 0,
+    statusId: 0,
+    assigneeId: 0,
+    startFrom: 0,
+    startTo: 0,
+  }
+
   this.firstDayOfWeek = Date.firstDayOfWeek;
   this.serverClientTimeOffset = 0;
 
@@ -1877,6 +1886,9 @@ GanttMaster.prototype.setHoursOn = function(startWorkingHour,endWorkingHour,date
 };
 
 GanttMaster.prototype.filter = function(operator, assignee, status, startFrom, startTo, tracker) {
+  //set filter options
+  this.setFilterOptions(operator, assignee, status, startFrom, startTo, tracker);
+
   if ((operator | status | startFrom | startTo | tracker) == 0) {
     return;
   }
@@ -1914,6 +1926,15 @@ GanttMaster.prototype.filter = function(operator, assignee, status, startFrom, s
   this.loadTasks(this.tasks, 0);
   this.redraw();
   // return tasksFilter;
+}
+
+GanttMaster.prototype.setFilterOptions = function(operator, assignee, status, startFrom, startTo, tracker) {
+  this.filterOpts.trackerId = tracker;
+  this.filterOpts.statusOperatorId = operator;
+  this.filterOpts.statusId = status;
+  this.filterOpts.assigneeId = assignee;
+  this.filterOpts.startFrom = startFrom;
+  this.filterOpts.startTo = startTo;
 }
 
 GanttMaster.prototype.checkStatusTaskFilter = function (task, operator, status) {
@@ -1999,6 +2020,7 @@ GanttMaster.prototype.setFilterMode = function(flag) {
 }
 
 GanttMaster.prototype.clearFilter = function () {
+  this.setFilterOptions(0, 0, 0, 0, 0, 0);
   for (var i = 0; i < this.tasks.length; i++) {
     this.tasks[i].hidden = false;
   }
