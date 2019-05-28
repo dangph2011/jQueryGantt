@@ -34,6 +34,24 @@ function TaskFactory() {
     // Set at beginning of day
     var adjusted_start = computeStart(start);
     var calculated_end = computeEndByDuration(adjusted_start, duration);
+    
+    //create default customFields for task
+    if (customFields.length == 0) {
+      var CUSTOM_FIELD_MUC_TIEU_KET_QUA_DAU_RA_ID = {
+          id: MUC_TIEU_KET_QUA_DAU_RA_ID,
+          name: "MUC_TIEU_KET_QUA_DAU_RA_ID",
+          value: ""
+      }
+
+      var CUSTOM_FIELD_CAP_NHAT_TIEN_DO_ID = {
+          id: CAP_NHAT_TIEN_DO_ID,
+          name: "CAP_NHAT_TIEN_DO_ID",
+          value: ""
+      }
+      customFields.push(CUSTOM_FIELD_MUC_TIEU_KET_QUA_DAU_RA_ID);
+      customFields.push(CUSTOM_FIELD_CAP_NHAT_TIEN_DO_ID);
+    }
+
     return new Task(id, name, code, level, adjusted_start, calculated_end, duration, tracker, status, position, collapsed, progress, description, assigs, customFields, depends);
   };
 }

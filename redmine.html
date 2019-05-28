@@ -91,8 +91,8 @@
         var INITIAL_STATUS = "initial_status";
         var LIMIT = 1000;
         //hardcode custom field id
-        var MUC_TIEU_KET_QUA_DAU_RA_ID = 7;
-        var CAP_NHAT_TIEN_DO_ID = 8;
+        var MUC_TIEU_KET_QUA_DAU_RA_ID = 6;
+        var CAP_NHAT_TIEN_DO_ID = 7;
 
         var proxy = 'https://cors-anywhere.herokuapp.com/';
         var server = "http://159.65.9.28/redmine";
@@ -725,6 +725,9 @@
         }
 
         function saveGanttOnServer() {
+            //check require custom field before saving project
+
+
             if (!ge.isChangedTask() && !ge.isDeletedTask()) {
                 alert("Nothing to save");
                 return;
@@ -969,13 +972,17 @@
                     }
                 }
 
+                if (task.hasOwnProperty("customFields")) {
+                    issue.issue.custom_fields = task.customFields;
+                }
+
                 issue.issue.project_id = projectIdentifier;
                 if (isNaN(issue.issue.id) || issue.issue.id < 0) {
                     ajaxCreateIssue(server, key, issue, taskQueue, relations, relationsBackward);
                 } else {
-                    if (task.hasOwnProperty("customFields")) {
-                        issue.issue.custom_fields = task.customFields;
-                    }
+                    // if (task.hasOwnProperty("customFields")) {
+                    //     issue.issue.custom_fields = task.customFields;
+                    // }
                     ajaxUpdateIssue(server, key, issue, taskQueue, relations, relationsBackward);
                 }
             } else {
